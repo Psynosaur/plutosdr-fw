@@ -15,4 +15,4 @@
 	url = https://github.com/maia-sdr/maia-sdr.git
 [submodule "pluto-ori-ps"]
 	path = pluto-ori-ps
-	url = https://github.com/F5OEO/pluto-ori-ps
+	url = https://github.com/F5OEO/pluto-ori-ps.git
