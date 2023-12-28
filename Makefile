@@ -1,6 +1,8 @@
 
-VIVADO_VERSION ?= 2022.2
-
+#VIVADO_VERSION ?= 2020.1
+VIVADO_VERSION ?= 2022.1
+export ADI_IGNORE_VERSION_CHECK = 1
+SKIP_LEGAL=1
 # Use Buildroot External Linaro GCC 7.3-2018.05 arm-linux-gnueabihf Toolchain
 CROSS_COMPILE = arm-linux-gnueabihf-
 TOOLS_PATH = PATH="$(CURDIR)/buildroot/output/host/bin:$(CURDIR)/buildroot/output/host/sbin:$(PATH)"
@@ -11,7 +13,8 @@ VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 VSUBDIRS = maia-sdr buildroot linux u-boot-xlnx
 
 VERSION=$(shell git describe --abbrev=4 --dirty --always --tags)
-LATEST_TAG=$(shell git describe --abbrev=0 --tags)
+#LATEST_TAG=$(shell git describe --abbrev=0 --tags)
+LATEST_TAG=maia-sdr-v0.4.1
 UBOOT_VERSION=$(shell echo -n "PlutoSDR " && cd u-boot-xlnx && git describe --abbrev=0 --dirty --always --tags)
 HAVE_VIVADO= $(shell bash -c "source $(VIVADO_SETTINGS) > /dev/null 2>&1 && vivado -version > /dev/null 2>&1 && echo 1 || echo 0")
 XSA_URL ?= http://github.com/maia-sdr/plutosdr-fw/releases/download/${LATEST_TAG}/system_top.xsa
@@ -89,7 +92,8 @@ build/uboot-env.bin: build/uboot-env.txt
 ### Linux ###
 
 linux/arch/arm/boot/zImage: TOOLCHAIN
-	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_$(TARGET)_defconfig
+	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_linux_defconfig
+##	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_defconfig
 	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
 
 .PHONY: linux/arch/arm/boot/zImage
