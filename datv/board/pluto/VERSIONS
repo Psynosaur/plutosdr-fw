@@ -1,0 +1,5 @@
+device-fw 0.3-37-g4256
+maia-sdr v0.6.1
+buildroot 2021.02.7-adi-12361-gc22d3-dirty
+linux adi-xilinx-2020.1-175885-g75eab5-dirty
+u-boot-xlnx v0.20-PlutoSDR-27-g49f86

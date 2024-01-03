@@ -1,23 +1,29 @@
 
 #VIVADO_VERSION ?= 2020.1
-VIVADO_VERSION ?= 2022.1
+#VIVADO_VERSION ?= 2022.1
 export ADI_IGNORE_VERSION_CHECK = 1
 SKIP_LEGAL=1
 # Use Buildroot External Linaro GCC 7.3-2018.05 arm-linux-gnueabihf Toolchain
 CROSS_COMPILE = arm-linux-gnueabihf-
 TOOLS_PATH = PATH="$(CURDIR)/buildroot/output/host/bin:$(CURDIR)/buildroot/output/host/sbin:$(PATH)"
 TOOLCHAIN = $(CURDIR)/buildroot/output/host/bin/$(CROSS_COMPILE)gcc
+ABSOLUTE_PATH=$(shell cd `dirname "${BASH_SOURCE[0]}"` && pwd)
+BOARD=$(ABSOLUTE_PATH/board)/datv/board
+BR2_EXTERNAL=$(ABSOLUTE_PATH)/datv
+BR2_PACKAGE_BUSYBOX_CONFIG=$(BR2_EXTERNAL)/datv/board/pluto/busybox-1.25.0.config
 
+BR2_EXTERNAL_PLUTOSDR_PATH=$(shell cd `dirname "${BASH_SOURCE[0]}"` && pwd)/datv
 NCORES = $(shell grep -c ^processor /proc/cpuinfo)
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 VSUBDIRS = maia-sdr buildroot linux u-boot-xlnx
 
-VERSION=$(shell git describe --abbrev=4 --dirty --always --tags)
+VERSION=$(shell git -C pluto-ori-ps describe --abbrev=4 --always --tags)
+PATCH=$(shell cd datv && ./applypatch.sh )
 #LATEST_TAG=$(shell git describe --abbrev=0 --tags)
 LATEST_TAG=maia-sdr-v0.4.1
 UBOOT_VERSION=$(shell echo -n "PlutoSDR " && cd u-boot-xlnx && git describe --abbrev=0 --dirty --always --tags)
 HAVE_VIVADO= $(shell bash -c "source $(VIVADO_SETTINGS) > /dev/null 2>&1 && vivado -version > /dev/null 2>&1 && echo 1 || echo 0")
-XSA_URL ?= http://github.com/maia-sdr/plutosdr-fw/releases/download/${LATEST_TAG}/system_top.xsa
+#XSA_URL ?= http://github.com/maia-sdr/plutosdr-fw/releases/download/${LATEST_TAG}/system_top.xsa
 
 ifeq (1, ${HAVE_VIVADO})
 	VIVADO_INSTALL= $(shell bash -c "source $(VIVADO_SETTINGS) > /dev/null 2>&1 && vivado -version | head -1 | awk '{print $2}'")
@@ -32,6 +38,7 @@ endif
 
 TARGET ?= pluto
 SUPPORTED_TARGETS:=pluto sidekiqz2 plutoplus
+XSA_FILE ?= datv/bitstream/${TARGET}/system_top.xsa
 
 # Include target specific constants
 include scripts/$(TARGET).mk
@@ -75,6 +82,7 @@ build:
 ### u-boot ###
 
 u-boot-xlnx/u-boot u-boot-xlnx/tools/mkimage: TOOLCHAIN
+#	$(TOOLS_PATH) make -C u-boot-xlnx ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_$(TARGET)_defconfig
 	$(TOOLS_PATH) make -C u-boot-xlnx ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_$(TARGET)_defconfig
 	$(TOOLS_PATH) make -C u-boot-xlnx ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) UBOOTVERSION="$(UBOOT_VERSION)"
 
@@ -92,9 +100,9 @@ build/uboot-env.bin: build/uboot-env.txt
 ### Linux ###
 
 linux/arch/arm/boot/zImage: TOOLCHAIN
-	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_linux_defconfig
+	#$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_linux_defconfig
 ##	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_defconfig
-	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
+	$(TOOLS_PATH) make BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE=$(ABSOLUTE_PATH)/datv/configs/zynq_$(TARGET)datv_linux_defconfig -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
 
 .PHONY: linux/arch/arm/boot/zImage
 
@@ -122,9 +130,6 @@ buildroot/board/$(TARGET)/maia-sdr.ko: maia-sdr/maia-kmod/maia-sdr.ko | build
 
 ### maia-httpd ###
 #
-# Now that buildroot is set-up to use its built-in toolchain with uclibc, we
-# need to build buildroot first to be able to use its toolchain to link
-# maia-httpd.
 maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd: TOOLCHAIN
 	cd maia-sdr/maia-httpd && \
 		$(TOOLS_PATH) cargo build --release --target armv7-unknown-linux-gnueabihf \
@@ -154,12 +159,51 @@ maia-wasm: buildroot/board/$(TARGET)/maia-wasm/pkg buildroot/board/$(TARGET)/mai
 
 .PHONY: maia-wasm
 
+### DATV 
+### nco-kmod ###
+linux_driver/nco_counter_core/nco_counter_core.ko: TOOLCHAIN
+	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) modules_prepare
+	$(TOOLS_PATH)  make -C linux_driver/nco_counter_core ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) KERNEL_SRC=../../linux
+
+.PHONY: linux_driver/nco_counter_core/nco_counter_core.ko
+
+$(BR2_EXTERNAL)/board/$(TARGET)/overlay/lib/modules/nco_counter_core.ko: linux_driver/nco_counter_core/nco_counter_core.ko | build
+	cp $< $@
+
+## Plutostream 
+pluto-ori-ps/pluto_stream: TOOLCHAIN
+	$(TOOLS_PATH)  make pluto_stream -C pluto-ori-ps ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
+
+.PHONY: pluto-ori-ps/pluto_stream
+
+$(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_stream: pluto-ori-ps/pluto_stream | build
+	cp $< $@
+
+## Plutomqttctrl
+pluto-ori-ps/pluto_mqtt_ctrl: TOOLCHAIN
+	$(TOOLS_PATH)  make pluto_mqtt_ctrl -C pluto-ori-ps ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
+
+.PHONY: pluto-ori-ps/pluto_mqtt_ctrl
+
+$(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_mqtt_ctrl: pluto-ori-ps/pluto_mqtt_ctrl | build
+	cp $< $@
+
+## Longmynd
+longmynd/longmynd: TOOLCHAIN
+	$(TOOLS_PATH)  make -C longmynd ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
+
+.PHONY: longmynd/longmynd
+
+$(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd: longmynd/longmynd | build
+	cp $< $@	
+
 ### Buildroot ###
 
-buildroot/output/images/rootfs.cpio.gz: buildroot/board/$(TARGET)/maia-sdr.ko buildroot/board/$(TARGET)/maia-httpd maia-wasm
-	@echo device-fw $(VERSION)> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS
-	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS;)
-	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
+buildroot/output/images/rootfs.cpio.gz: buildroot/board/$(TARGET)/maia-sdr.ko buildroot/board/$(TARGET)/maia-httpd maia-wasm $(BR2_EXTERNAL)/board/$(TARGET)/overlay/lib/modules/nco_counter_core.ko $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_mqtt_ctrl $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_stream $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd
+	@echo device-fw $(VERSION)> $(BR2_EXTERNAL)/board/$(TARGET)/VERSIONS
+	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(BR2_EXTERNAL)/board/$(TARGET)/VERSIONS;)
+	make BR2_EXTERNAL=$(ABSOLUTE_PATH)/datv -C buildroot ARCH=arm zynq_$(TARGET)datv_defconfig
+##	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
 
 ifneq (1, ${SKIP_LEGAL})
 	make -C buildroot legal-info
@@ -178,13 +222,15 @@ build/$(TARGET).itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz
 	u-boot-xlnx/tools/mkimage -f scripts/$(TARGET).its $@
 
 build/system_top.xsa:  | build
-ifeq (1, ${HAVE_VIVADO})
-	bash -c "source $(VIVADO_SETTINGS) && make -C maia-sdr/maia-hdl/projects/$(TARGET) && cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).sdk/system_top.xsa $@"
-	unzip -l $@ | grep -q ps7_init || cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
-else ifneq ($(XSA_FILE),)
+ifneq ($(XSA_FILE),)
 	cp $(XSA_FILE) $@
 else ifneq ($(XSA_URL),)
 	wget -T 3 -t 1 -N --directory-prefix build $(XSA_URL)
+else ifeq (1, ${HAVE_VIVADO})
+#bash -c "source $(VIVADO_SETTINGS) && make -C maia-sdr/maia-hdl/projects/$(TARGET) && cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).sdk/system_top.xsa $@"
+#unzip -l $@ | grep -q ps7_init || cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori && cp ../hdl/projects/pluto-ori/$(TARGET).sdk/system_top.xsa $@"
+	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
 endif
 
 ### TODO: Build system_top.xsa from src if dl fails ...

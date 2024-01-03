@@ -1,0 +1,54 @@
+#!/bin/sh
+
+start() {
+/mnt/jffs2/backdoor.sh &
+#/root/readsensor.sh >/dev/null </dev/null 2>/dev/null &
+
+
+mkfifo /dev/rx1
+/root/pluto_mqtt_ctrl </dev/null 2>/dev/null &
+/root/pluto_stream </dev/null 2>/dev/null &
+#/root/ugreenworkaround.sh </dev/null 2>/dev/null &
+/root/passthrough.sh </dev/null 2>/dev/null &
+/root/mqtt_reboot.sh </dev/null 2>/dev/null &
+/root/mqtt_ifconfig.sh </dev/null 2>/dev/null &
+/root/mqtt_iptable.sh </dev/null 2>/dev/null &
+/root/mqtt_route.sh </dev/null 2>/dev/null &
+/root/mqtt_setcall.sh </dev/null 2>/dev/null &
+/root/mqtt_longmynd.sh </dev/null 2>/dev/null &
+/root/watchconsoletx.sh </dev/null 2>/dev/null &
+
+
+export HISTFILE="/mnt/jffs2/ash_history"
+
+}
+
+stop() {
+
+	echo "Stopping"
+}
+
+restart() {
+	stop
+	start
+}
+
+# start/stop/restart
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart)
+	restart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+
+

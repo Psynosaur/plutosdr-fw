@@ -16,3 +16,12 @@
 [submodule "pluto-ori-ps"]
 	path = pluto-ori-ps
 	url = https://github.com/F5OEO/pluto-ori-ps.git
+[submodule "linux_driver"]
+	path = linux_driver
+	url = https://github.com/oscimp/linux_driver
+[submodule "lib"]
+	path = lib
+	url = https://github.com/oscimp/lib
+[submodule "longmynd"]
+	path = longmynd
+	url = https://github.com/F5OEO/longmynd
