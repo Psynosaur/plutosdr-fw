@@ -24,7 +24,7 @@ jobs:
     - name: Build PlutoDatvFirmware
       shell: bash
       run: |
-        make clean && make 
+        make 
         
 
  
