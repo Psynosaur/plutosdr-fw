@@ -100,9 +100,9 @@ build/uboot-env.bin: build/uboot-env.txt
 ### Linux ###
 
 linux/arch/arm/boot/zImage: TOOLCHAIN
-	#$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_linux_defconfig
+	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_linux_defconfig
 ##	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_defconfig
-	$(TOOLS_PATH) make BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE=$(ABSOLUTE_PATH)/datv/configs/zynq_$(TARGET)datv_linux_defconfig -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
+##$(TOOLS_PATH) make BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE=$(ABSOLUTE_PATH)/datv/configs/zynq_$(TARGET)datv_linux_defconfig -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
 
 .PHONY: linux/arch/arm/boot/zImage
 
