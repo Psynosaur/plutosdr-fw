@@ -199,7 +199,7 @@ $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd: longmynd/longmynd | 
 
 ### Buildroot ###
 
-buildroot/output/images/rootfs.cpio.gz: $(BR2_EXTERNAL)/board/$(TARGET)/overlay/lib/modules/nco_counter_core.ko $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_mqtt_ctrl $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_stream $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd
+buildroot/output/images/rootfs.cpio.gz: 
 	@echo device-fw $(VERSION)> $(BR2_EXTERNAL)/board/$(TARGET)/VERSIONS
 	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(BR2_EXTERNAL)/board/$(TARGET)/VERSIONS;)
 	make BR2_EXTERNAL=$(ABSOLUTE_PATH)/datv -C buildroot ARCH=arm zynq_$(TARGET)datv_defconfig
@@ -211,11 +211,11 @@ ifneq (1, ${SKIP_LEGAL})
 	cp build/LICENSE.html buildroot/board/$(TARGET)/msd/LICENSE.html
 endif
 
-	make -C buildroot BUSYBOX_CONFIG_FILE=$(CURDIR)/buildroot/board/$(TARGET)/busybox-1.25.0.config all
+	make -C buildroot BUSYBOX_CONFIG_FILE=$(BR2_EXTERNAL)/board/$(TARGET)/busybox-1.25.0.config all
 
 .PHONY: buildroot/output/images/rootfs.cpio.gz
 
-build/rootfs.cpio.gz: buildroot/output/images/rootfs.cpio.gz | build
+build/rootfs.cpio.gz: buildroot/output/images/rootfs.cpio.gz $(BR2_EXTERNAL)/board/$(TARGET)/overlay/lib/modules/nco_counter_core.ko $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_mqtt_ctrl $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_stream $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd | build
 	cp $< $@
 
 build/$(TARGET).itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz $(TARGET_DTS_FILES) build/system_top.bit
