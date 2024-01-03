@@ -36,6 +36,11 @@ $(error "      3] export VIVADO_VERSION=v20xx.x")
 	endif
 endif
 
+##PATCH COMMAND NEED TO BE INVOCATED  
+ifneq (1, ${PATCH})
+    $(warning patch granted $(PATCH))
+endif
+
 TARGET ?= pluto
 SUPPORTED_TARGETS:=pluto sidekiqz2 plutoplus
 XSA_FILE ?= datv/bitstream/${TARGET}/system_top.xsa
