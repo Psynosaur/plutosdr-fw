@@ -199,7 +199,7 @@ $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd: longmynd/longmynd | 
 
 ### Buildroot ###
 
-buildroot/output/images/rootfs.cpio.gz: buildroot/board/$(TARGET)/maia-sdr.ko buildroot/board/$(TARGET)/maia-httpd maia-wasm $(BR2_EXTERNAL)/board/$(TARGET)/overlay/lib/modules/nco_counter_core.ko $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_mqtt_ctrl $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_stream $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd
+buildroot/output/images/rootfs.cpio.gz: $(BR2_EXTERNAL)/board/$(TARGET)/overlay/lib/modules/nco_counter_core.ko $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_mqtt_ctrl $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_stream $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd
 	@echo device-fw $(VERSION)> $(BR2_EXTERNAL)/board/$(TARGET)/VERSIONS
 	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(BR2_EXTERNAL)/board/$(TARGET)/VERSIONS;)
 	make BR2_EXTERNAL=$(ABSOLUTE_PATH)/datv -C buildroot ARCH=arm zynq_$(TARGET)datv_defconfig
