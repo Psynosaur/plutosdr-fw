@@ -25,12 +25,12 @@ jobs:
     - name: Build PlutoDatvFirmware
       shell: bash
       run: |
-        make 
+        cd plutosdr-fw && make
 
     - name: Build PlutoPlusDatvFirmware
       shell: bash
       run: |
-        TARGET=plutoplus make
+        cd plutosdr-fw && TARGET=plutoplus make
 
         
  
