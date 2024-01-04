@@ -100,6 +100,11 @@ process_ini() {
 		echo "usb_ethernet_mode $usb_ethernet_mode" >> /opt/fw_set.tmp
 		echo "ipaddr_eth $ipaddr_eth" >> /opt/fw_set.tmp
 		echo "netmask_eth $netmask_eth" >> /opt/fw_set.tmp
+		echo "gateway_eth $gateway_eth"  >> /opt/fw_set.tmp
+		echo "ipaddr_eth2 $ipaddr_eth2" >> /opt/fw_set.tmp
+		echo "netmask_eth2 $netmask_eth2" >> /opt/fw_set.tmp
+		echo "gateway_eth2 $gateway_eth2"  >> /opt/fw_set.tmp
+		
 		fw_setenv -s /opt/fw_set.tmp
 		rm /opt/fw_set.tmp
 		flash_indication_off
