@@ -5,7 +5,7 @@
 
 function get_status () {
 
-cd /sys/bus/iio/devices/iio\:device0
+cd /sys/bus/iio/devices/iio\:device1
 
 	echo "     ****** RX ******"
 	echo "Freq       : " $(cat out_altvoltage0_RX_LO_frequency)
