@@ -172,7 +172,7 @@ linux_driver/nco_counter_core/nco_counter_core.ko: TOOLCHAIN
 
 .PHONY: linux_driver/nco_counter_core/nco_counter_core.ko
 
-$(BR2_EXTERNAL)/board/$(TARGET)/overlay/lib/modules/nco_counter_core.ko: linux_driver/nco_counter_core/nco_counter_core.ko | build
+$(BR2_EXTERNAL)/board/pluto/overlay/lib/modules/nco_counter_core.ko: linux_driver/nco_counter_core/nco_counter_core.ko | build
 	cp $< $@
 
 ## Plutostream 
@@ -181,7 +181,7 @@ pluto-ori-ps/pluto_stream: TOOLCHAIN
 
 .PHONY: pluto-ori-ps/pluto_stream
 
-$(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_stream: pluto-ori-ps/pluto_stream | build
+$(BR2_EXTERNAL)/board/pluto/overlay/root/pluto_stream: pluto-ori-ps/pluto_stream | build
 	cp $< $@
 
 ## Plutomqttctrl
@@ -190,7 +190,7 @@ pluto-ori-ps/pluto_mqtt_ctrl: TOOLCHAIN
 
 .PHONY: pluto-ori-ps/pluto_mqtt_ctrl
 
-$(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_mqtt_ctrl: pluto-ori-ps/pluto_mqtt_ctrl | build
+$(BR2_EXTERNAL)/board/pluto/overlay/root/pluto_mqtt_ctrl: pluto-ori-ps/pluto_mqtt_ctrl | build
 	cp $< $@
 
 ## Longmynd
@@ -199,28 +199,28 @@ longmynd/longmynd: TOOLCHAIN
 
 .PHONY: longmynd/longmynd
 
-$(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd: longmynd/longmynd | build
+$(BR2_EXTERNAL)/board/pluto/overlay/root/datv/longmynd: longmynd/longmynd | build
 	cp $< $@	
 
 ### Buildroot ###
 
 buildroot/output/images/rootfs.cpio.gz: 
-	@echo device-fw $(VERSION)> $(BR2_EXTERNAL)/board/$(TARGET)/VERSIONS
-	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(BR2_EXTERNAL)/board/$(TARGET)/VERSIONS;)
-	make BR2_EXTERNAL=$(ABSOLUTE_PATH)/datv -C buildroot ARCH=arm zynq_$(TARGET)datv_defconfig
+	@echo device-fw $(VERSION)> $(BR2_EXTERNAL)/board/pluto/VERSIONS
+	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(BR2_EXTERNAL)/board/pluto/VERSIONS;)
+	make BR2_EXTERNAL=$(ABSOLUTE_PATH)/datv -C buildroot ARCH=arm zynq_plutodatv_defconfig
 ##	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
 
 ifneq (1, ${SKIP_LEGAL})
 	make -C buildroot legal-info
-	scripts/legal_info_html.sh "$(COMPLETE_NAME)" "$(CURDIR)/buildroot/board/$(TARGET)/VERSIONS"
-	cp build/LICENSE.html buildroot/board/$(TARGET)/msd/LICENSE.html
+	scripts/legal_info_html.sh "$(COMPLETE_NAME)" "$(CURDIR)/buildroot/board/pluto/VERSIONS"
+	cp build/LICENSE.html buildroot/board/pluto/msd/LICENSE.html
 endif
 
-	make -C buildroot BUSYBOX_CONFIG_FILE=$(BR2_EXTERNAL)/board/$(TARGET)/busybox-1.25.0.config all
+	make -C buildroot BUSYBOX_CONFIG_FILE=$(BR2_EXTERNAL)/board/pluto/busybox-1.25.0.config all
 
 .PHONY: buildroot/output/images/rootfs.cpio.gz
 
-build/rootfs.cpio.gz: buildroot/output/images/rootfs.cpio.gz $(BR2_EXTERNAL)/board/$(TARGET)/overlay/lib/modules/nco_counter_core.ko $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_mqtt_ctrl $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_stream $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd | build
+build/rootfs.cpio.gz: buildroot/output/images/rootfs.cpio.gz $(BR2_EXTERNAL)/board/pluto/overlay/lib/modules/nco_counter_core.ko $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_mqtt_ctrl $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/pluto_stream $(BR2_EXTERNAL)/board/$(TARGET)/overlay/root/datv/longmynd | build
 	cp $< $@
 
 build/$(TARGET).itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz $(TARGET_DTS_FILES) build/system_top.bit
@@ -236,6 +236,7 @@ else ifeq (1, ${HAVE_VIVADO})
 #unzip -l $@ | grep -q ps7_init || cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
 	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori && cp ../hdl/projects/pluto-ori/$(TARGET).sdk/system_top.xsa $@"
 	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+#bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori-plus"
 endif
 
 ### TODO: Build system_top.xsa from src if dl fails ...
