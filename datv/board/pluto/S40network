@@ -59,6 +59,7 @@ create_system_files () {
 		echo -e "\taddress $ETH_IPADDR\n""\tnetmask $ETH_NETMASK\n" >> $IFAC
 		if [ -n "$ETH_GW" ]; then
 			echo -e "\tgateway $ETH_GW\n" >> $IFAC
+		fi	
 	else
 		echo -e "iface eth0 inet dhcp\n" >> $IFAC
 	fi
@@ -70,6 +71,7 @@ create_system_files () {
 		echo -e "\taddress $ETH_IPADDR2\n""\tnetmask $ETH_NETMASK2\n" >> $IFAC
 		if [ -n "$ETH_GW2" ]; then
 			echo -e "\tgateway $ETH_GW2\n" >> $IFAC
+		fi	
 	else
 		echo -e "iface eth1 inet dhcp\n" >> $IFAC
 	fi
@@ -132,6 +134,10 @@ create_system_files () {
 	echo "ipaddr_eth = $ETH_IPADDR"$'\r' >> $CONF
 	echo "netmask_eth = $ETH_NETMASK"$'\r' >> $CONF
 	echo "gateway_eth = $ETH_GW"$'\r' >> $CONF
+	echo "ipaddr_eth2 = $ETH_IPADDR2"$'\r' >> $CONF
+	echo "netmask_eth2 = $ETH_NETMASK2"$'\r' >> $CONF
+	echo "gateway_eth2 = $ETH_GW2"$'\r' >> $CONF
+
 	echo ""$'\r'>> $CONF
 	echo "[SYSTEM]"$'\r' >> $CONF
 	echo "xo_correction = $XO_CORRECTION"$'\r' >> $CONF
