@@ -2,16 +2,9 @@ on: [push, pull_request]
 
 jobs:
   build-x86_64:
-    runs-on: ${{ matrix.os }}
-    name: Build on ${{ matrix.os }} x86_64
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
-
+    runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v4.1.1
-    with:
-    submodules: recursive
     - name: Install dependencies
       shell: bash
       run: |
@@ -23,9 +16,21 @@ jobs:
            bison flex libncurses5-dev libssl-dev bc cpio rsync cmake \
            libgtk-3-0 xz-utils libgmp-dev libmpc-dev 
 
+    - name: Checkout
+      shell: bash
+      run: |
+        git clone --recursive --depth 1 --shallow-submodules https://github.com/F5OEO/plutosdr-fw
+    
+
     - name: Build PlutoDatvFirmware
       shell: bash
       run: |
         make 
+
+    - name: Build PlutoPlusDatvFirmware
+      shell: bash
+      run: |
+        TARGET=plutoplus make
+
         
  
