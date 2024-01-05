@@ -186,8 +186,8 @@ $(BR2_EXTERNAL)/board/pluto/overlay/root/pluto_stream: pluto-ori-ps/pluto_stream
 
 ## Plutomqttctrl
 pluto-ori-ps/pluto_mqtt_ctrl: TOOLCHAIN
-	$(TOOLS_PATH)  make pluto_mqtt_ctrl -C pluto-ori-ps ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
-
+	$(TOOLS_PATH) make pluto_mqtt_ctrl -C pluto-ori-ps ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
+	$(TOOLS_PATH) PAPR_ORI=$(BR2_EXTERNAL)/board/pluto/overlay/root make install -C pluto-ori-ps ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
 .PHONY: pluto-ori-ps/pluto_mqtt_ctrl
 
 $(BR2_EXTERNAL)/board/pluto/overlay/root/pluto_mqtt_ctrl: pluto-ori-ps/pluto_mqtt_ctrl | build
