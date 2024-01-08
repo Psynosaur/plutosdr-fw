@@ -26,8 +26,8 @@ jobs:
       shell: bash
       run: |
         cd plutosdr-fw && make
-    
-   - name: Upload artifacts
+
+    - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: pluto-firmware
