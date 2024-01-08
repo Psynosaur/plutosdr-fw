@@ -32,6 +32,6 @@ jobs:
       with:
         name: pluto-firmware
         path: |
-          build/pluto.dfu
-          build/pluto.frm
+          ./plutosdr-fw/build/pluto.dfu
+          ./plutosdr-fw/build/pluto.frm
         if-no-files-found: error
