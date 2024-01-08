@@ -35,14 +35,24 @@ jobs:
       with:
         tag_name: plutodvb2_${{ github.run_number }}
         release_name: Release ${{ github.run_number }}
-    - name: Upload Release Asset
-      id: upload-release-asset 
+    - name: Upload Release Asset dfu
+      id: upload-release-asset-dfu 
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./plutosdr-fw/build
-        asset_name: pluto.dfu pluto.frm
+        asset_path: ./plutosdr-fw/build/pluto.dfu
+        asset_name: pluto.dfu
+        asset_content_type: application/octet-stream
+    - name: Upload Release Asset frm
+      id: upload-release-asset-frm 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./plutosdr-fw/build/pluto.frm
+        asset_name: pluto.frm
         asset_content_type: application/octet-stream
     
