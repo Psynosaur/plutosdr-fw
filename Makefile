@@ -225,7 +225,7 @@ endif
 
 ## Invoke again buildroot to add datv bin in rootfs
 build/rootfs.cpio.gz: buildroot/output/images/rootfs.cpio.gz $(BR2_EXTERNAL)/board/pluto/overlay/lib/modules/nco_counter_core.ko $(BR2_EXTERNAL)/board/pluto/overlay/root/pluto_mqtt_ctrl $(BR2_EXTERNAL)/board/pluto/overlay/root/pluto_stream $(BR2_EXTERNAL)/board/pluto/overlay/root/datv/longmynd | build
-	make BR2_EXTERNAL=$(ABSOLUTE_PATH)/datv -C buildroot ARCH=arm zynq_plutodatv_defconfig
+	make -C buildroot BUSYBOX_CONFIG_FILE=$(BR2_EXTERNAL)/board/pluto/busybox-1.25.0.config all
 	cp $< $@
 
 build/$(TARGET).itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz $(TARGET_DTS_FILES) build/system_top.bit
