@@ -45,6 +45,8 @@ TARGET ?= pluto
 SUPPORTED_TARGETS:=pluto sidekiqz2 plutoplus
 XSA_FILE ?= datv/bitstream/${TARGET}/system_top.xsa
 
+$(warning *** Building target $(TARGET),)
+
 # Include target specific constants
 include scripts/$(TARGET).mk
 
