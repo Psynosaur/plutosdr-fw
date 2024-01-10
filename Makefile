@@ -290,7 +290,7 @@ sdimg: build | build/rootfs.cpio.gz
 	cp build/system_top.bit 	$(SDIMGDIR)/system_top.bit
 	cp build/u-boot.elf 			$(SDIMGDIR)/u-boot.elf
 	cp linux/arch/arm/boot/zImage	$(SDIMGDIR)/uImage
-	cp build/zynq-$(TARGET)-maiasdr.dtb 	$(SDIMGDIR)/devicetree.dtb
+	cp build/zynq-$(TARGET)-sdr-maiasdr.dtb 	$(SDIMGDIR)/devicetree.dtb
 	cp build/uboot-env.txt  		$(SDIMGDIR)/uEnv.txt
 	cp build/rootfs.cpio.gz  		$(SDIMGDIR)/ramdisk.image.gz
 	mkimage -A arm -T ramdisk -C gzip -d $(SDIMGDIR)/ramdisk.image.gz $(SDIMGDIR)/uramdisk.image.gz
