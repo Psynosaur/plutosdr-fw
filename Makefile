@@ -52,14 +52,14 @@ include scripts/$(TARGET).mk
 
 ifeq (, $(shell which dfu-suffix))
 $(warning "No dfu-utils in PATH consider doing: sudo apt-get install dfu-util")
-TARGETS = build/$(TARGET).frm
+TARGETS = build/$(TARGET).frm build/$(TARGET)_boot.frm sdimg
 ifeq (1, ${HAVE_VIVADO})
-TARGETS += build/boot.frm jtag-bootstrap
+TARGETS += jtag-bootstrap
 endif
 else
-TARGETS = build/$(TARGET).dfu build/uboot-env.dfu build/$(TARGET).frm
+TARGETS = build/$(TARGET).dfu build/uboot-env.dfu build/$(TARGET).frm  build/boot.dfu build/$(TARGET)_boot.frm sdimg
 ifeq (1, ${HAVE_VIVADO})
-TARGETS += build/boot.dfu build/boot.frm jtag-bootstrap
+TARGETS += jtag-bootstrap
 endif
 endif
 
@@ -246,7 +246,7 @@ endif
 
 ### TODO: Build system_top.xsa from src if dl fails ...
 
-build/sdk/fsbl/Release/fsbl.elf build/system_top.bit : build/system_top.xsa
+build/fsbl.elf build/system_top.bit : build/system_top.xsa
 	rm -Rf build/sdk
 ifeq (1, ${HAVE_VIVADO})
 	bash -c "source $(VIVADO_SETTINGS) && xsct scripts/create_fsbl_project.tcl"
@@ -254,17 +254,21 @@ else
 	unzip -o build/system_top.xsa system_top.bit -d build
 endif
 
-build/boot.bin: build/sdk/fsbl/Release/fsbl.elf build/u-boot.elf
+build/boot.bin: build/fsbl.elf build/u-boot.elf
 	@echo img:{[bootloader] $^ } > build/boot.bif
+ifeq (1, ${HAVE_VIVADO})
 	bash -c "source $(VIVADO_SETTINGS) && bootgen -image build/boot.bif -w -o $@"
-
+else
+	cp datv/bitstream/$(TARGET)/fsbl.elf build/fsbl.elf
+	bash -c "bootgen -image build/boot.bif -w -o $@"
+endif
 ### MSD update firmware file ###
 
 build/$(TARGET).frm: build/$(TARGET).itb
 	md5sum $< | cut -d ' ' -f 1 > $@.md5
 	cat $< $@.md5 > $@
 
-build/boot.frm: build/boot.bin build/uboot-env.bin scripts/target_mtd_info.key
+build/$(TARGET)_boot.frm: build/boot.bin build/uboot-env.bin scripts/target_mtd_info.key
 	cat $^ | tee $@ | md5sum | cut -d ' ' -f1 | tee -a $@
 
 ### DFU update firmware file ###
@@ -278,6 +282,27 @@ build/$(TARGET).dfu: build/$(TARGET).itb
 	cp $< $<.tmp
 	dfu-suffix -a $<.tmp -v $(DEVICE_VID) -p $(DEVICE_PID)
 	mv $<.tmp $@
+
+SDIMGDIR = $(CURDIR)/build_sdimg
+sdimg: build | build/rootfs.cpio.gz
+	mkdir -p $(SDIMGDIR)
+	cp datv/bitstream/$(TARGET)/fsbl.elf 	$(SDIMGDIR)/fsbl.elf  
+	cp build/system_top.bit 	$(SDIMGDIR)/system_top.bit
+	cp build/u-boot.elf 			$(SDIMGDIR)/u-boot.elf
+	cp linux/arch/arm/boot/zImage	$(SDIMGDIR)/uImage
+	cp build/zynq-$(TARGET)-maiasdr.dtb 	$(SDIMGDIR)/devicetree.dtb
+	cp build/uboot-env.txt  		$(SDIMGDIR)/uEnv.txt
+	cp build/rootfs.cpio.gz  		$(SDIMGDIR)/ramdisk.image.gz
+	mkimage -A arm -T ramdisk -C gzip -d $(SDIMGDIR)/ramdisk.image.gz $(SDIMGDIR)/uramdisk.image.gz
+	touch 	$(SDIMGDIR)/boot.bif
+	echo "img : {[bootloader] $(SDIMGDIR)/fsbl.elf  $(SDIMGDIR)/system_top.bit  $(SDIMGDIR)/u-boot.elf}" >  $(SDIMGDIR)/boot.bif
+	bootgen -image $(SDIMGDIR)/boot.bif -w -o i $(SDIMGDIR)/BOOT.bin
+	rm $(SDIMGDIR)/fsbl.elf
+	rm $(SDIMGDIR)/system_top.bit
+	rm $(SDIMGDIR)/u-boot.elf
+	rm $(SDIMGDIR)/ramdisk.image.gz 
+	rm $(SDIMGDIR)/boot.bif
+
 
 clean-build:
 	rm -f $(notdir $(wildcard build/*))
