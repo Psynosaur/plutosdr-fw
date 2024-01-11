@@ -9,3 +9,7 @@ cp configs/zynq_pluto_linux_defconfig ../linux/arch/arm/configs/
 cp configs/zynq_plutoplus_linux_defconfig ../linux/arch/arm/configs/
 ## Replace mosquitoo 2.0.17 (segfault) with 20.0.18
 cp patches/mosquitto/* ../buildroot/package/mosquitto/
+## Customize u-boot env
+cp patches/u-boot/zynq-common.h ../u-boot-xlnx/include/configs/
+cp patches/u-boot/zynq-plutoplus.dts ../u-boot-xlnx/arch/arm/dts/
+cp patches/u-boot/zynq_plutoplus_defconfig ../u-boot-xlnx/configs/

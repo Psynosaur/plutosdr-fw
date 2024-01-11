@@ -108,14 +108,19 @@ build/uboot-env.bin: build/uboot-env.txt
 
 linux/arch/arm/boot/zImage: TOOLCHAIN
 	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_$(TARGET)_linux_defconfig zImage UIMAGE_LOADADDR=0x8000
+	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_$(TARGET)_linux_defconfig uImage UIMAGE_LOADADDR=0x8000
 ##	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_defconfig
 ##$(TOOLS_PATH) make BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE=$(ABSOLUTE_PATH)/datv/configs/zynq_$(TARGET)datv_linux_defconfig -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
 
 .PHONY: linux/arch/arm/boot/zImage
-
+.PHONY: linux/arch/arm/boot/uImage
 
 build/zImage: linux/arch/arm/boot/zImage | build
 	cp $< $@
+
+build/uImage: linux/arch/arm/boot/uImage | build
+	cp $< $@
+
 
 ### Device Tree ###
 
@@ -283,18 +288,18 @@ build/$(TARGET).dfu: build/$(TARGET).itb
 	dfu-suffix -a $<.tmp -v $(DEVICE_VID) -p $(DEVICE_PID)
 	mv $<.tmp $@
 
-SDIMGDIR = $(CURDIR)/build_sdimg
+SDIMGDIR = build/sdimg
 sdimg: build | build/rootfs.cpio.gz
 	mkdir -p $(SDIMGDIR)
 	cp datv/bitstream/$(TARGET)/fsbl.elf 	$(SDIMGDIR)/fsbl.elf  
 	cp build/system_top.bit 	$(SDIMGDIR)/system_top.bit
 	cp build/u-boot.elf 			$(SDIMGDIR)/u-boot.elf
-	cp linux/arch/arm/boot/zImage	$(SDIMGDIR)/uImage
+	cp linux/arch/arm/boot/uImage	$(SDIMGDIR)/uImage
 
-ifeq ( ${TARGET},pluto)
+ifeq ($(TARGET),pluto)
 	cp build/zynq-pluto-sdr-maiasdr.dtb 	$(SDIMGDIR)/devicetree.dtb
 endif	
-ifeq ( ${TARGET},plutoplus)
+ifeq ($(TARGET),plutoplus)
 	cp build/zynq-plutoplus-maiasdr.dtb 	$(SDIMGDIR)/devicetree.dtb
 endif	
 	cp build/uboot-env.txt  		$(SDIMGDIR)/uEnv.txt
