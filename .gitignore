@@ -5,7 +5,7 @@
 *.o
 *.ko
 *.obj
-*.elf
+
 
 # Precompiled Headers
 *.gch
@@ -37,3 +37,5 @@
 
 build/
 .Xil
+datv/board/pluto/overlay/root/pluto_stream
+datv/board/pluto/overlay/root/pluto_mqtt_ctrl
