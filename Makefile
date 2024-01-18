@@ -17,7 +17,7 @@ NCORES = $(shell grep -c ^processor /proc/cpuinfo)
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 VSUBDIRS = maia-sdr buildroot linux u-boot-xlnx
 
-VERSION=$(shell git -C pluto-ori-ps describe --abbrev=4 --always --tags)
+VERSION=$(shell git describe --abbrev=4 --always --tags)
 PATCH=$(shell cd datv && ./applypatch.sh )
 #LATEST_TAG=$(shell git describe --abbrev=0 --tags)
 LATEST_TAG=maia-sdr-v0.4.1
@@ -244,8 +244,15 @@ else ifneq ($(XSA_URL),)
 else ifeq (1, ${HAVE_VIVADO})
 #bash -c "source $(VIVADO_SETTINGS) && make -C maia-sdr/maia-hdl/projects/$(TARGET) && cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).sdk/system_top.xsa $@"
 #unzip -l $@ | grep -q ps7_init || cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
-	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori && cp ../hdl/projects/pluto-ori/$(TARGET).sdk/system_top.xsa $@"
-	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+ifeq ($(TARGET),pluto)
+	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori && cp ../hdl/projects/pluto-ori/pluto.sdk/system_top.xsa $@"
+	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori/pluto.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+endif	
+ifeq ($(TARGET),plutoplus)
+	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori-plus && cp ../hdl/projects/pluto-ori-plus/pluto.sdk/system_top.xsa $@"
+	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori-plus/pluto.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+endif
+	
 #bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori-plus"
 endif
 
