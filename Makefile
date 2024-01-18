@@ -19,6 +19,7 @@ VSUBDIRS = maia-sdr buildroot linux u-boot-xlnx
 
 VERSION=$(shell git describe --abbrev=4 --always --tags)
 PATCH=$(shell cd datv && ./applypatch.sh )
+$(shell git log --pretty=format:"%h - %ad : %s" > datv/board/pluto/overlay/root/fwhistory.txt)
 #LATEST_TAG=$(shell git describe --abbrev=0 --tags)
 LATEST_TAG=maia-sdr-v0.4.1
 UBOOT_VERSION=$(shell echo -n "PlutoSDR " && cd u-boot-xlnx && git describe --abbrev=0 --dirty --always --tags)
@@ -184,7 +185,7 @@ $(BR2_EXTERNAL)/board/pluto/overlay/lib/modules/nco_counter_core.ko: linux_drive
 
 ## Plutostream 
 pluto-ori-ps/pluto_stream: TOOLCHAIN
-	$(TOOLS_PATH)  make pluto_stream -C pluto-ori-ps ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
+	$(TOOLS_PATH)  make pluto_stream -C pluto-ori-ps VER=$(VERSION) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
 
 .PHONY: pluto-ori-ps/pluto_stream
 
