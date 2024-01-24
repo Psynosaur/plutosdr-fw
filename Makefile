@@ -43,7 +43,7 @@ ifneq (1, ${PATCH})
 endif
 
 TARGET ?= pluto
-SUPPORTED_TARGETS:=pluto sidekiqz2 plutoplus
+SUPPORTED_TARGETS:=pluto sidekiqz2 plutoplus e200
 XSA_FILE ?= datv/bitstream/${TARGET}/system_top.xsa
 
 $(warning *** Building target $(TARGET),)
@@ -77,7 +77,7 @@ endif
 TARGET_DTS_FILES:=$(foreach dts,$(TARGET_DTS_FILES),build/$(dts))
 
 TOOLCHAIN:
-	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
+	make -C buildroot ARCH=arm zynq_pluto_defconfig
 	make -C buildroot toolchain
 
 build:
@@ -253,7 +253,10 @@ ifeq ($(TARGET),plutoplus)
 	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori-plus && cp ../hdl/projects/pluto-ori-plus/pluto.sdk/system_top.xsa $@"
 	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori-plus/pluto.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
 endif
-	
+ifeq ($(TARGET),e200)
+	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori-e200 && cp ../hdl/projects/pluto-ori-e200/e200.sdk/system_top.xsa $@"
+	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori-e200/e200.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+endif	
 #bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori-plus"
 endif
 
@@ -309,6 +312,9 @@ ifeq ($(TARGET),pluto)
 endif	
 ifeq ($(TARGET),plutoplus)
 	cp build/zynq-plutoplus-maiasdr.dtb 	$(SDIMGDIR)/devicetree.dtb
+endif	
+ifeq ($(TARGET),e200)
+	cp build/zynq-e200.dtb 	$(SDIMGDIR)/devicetree.dtb
 endif	
 	cp build/uboot-env.txt  		$(SDIMGDIR)/uEnv.txt
 	cp build/rootfs.cpio.gz  		$(SDIMGDIR)/ramdisk.image.gz

@@ -286,6 +286,12 @@
 		"if test \"${refclk_source}\" = \"external\" && test \"${model}\" = \"Analog Devices PlutoSDR Rev.C (Z7010/AD9363)\" ; then " \
 			"fdt rm /amba/gpio@e000a000/clock_internal_en || fdt rm /axi/gpio@e000a000/clock_internal_en; " \
 		"fi; " \
+		"if test \"${refclk_source}\" = \"internal\" && test \"${model}\" = \"Analog Devices ANTSDR Rev.C (Z7020/AD9363)\" ; then " \
+			"fdt rm /amba/gpio@e000a000/clock_extern_en || fdt rm /amba/gpio@e000a000/clock_extern_en; " \
+		"fi; " \
+		"if test \"${refclk_source}\" = \"external\" && test \"${model}\" = \"Analog Devices ANTSDR Rev.C (Z7020/AD9363)\" ; then " \
+			"fdt rm /amba/gpio@e000a000/clock_internal_en || fdt rm /amba/gpio@e000a000/clock_internal_en; " \
+		"fi; " \
 		"if test  \"${attr_val}\" = \"ad9361\" && test ! \"${model}\" = \"Analog Devices PlutoSDR Rev.C (Z7010/AD9363)\" ; then " \
 			"setenv attr_val ad9363a; " \
 			"saveenv; " \
@@ -300,18 +306,27 @@
 		"fi; " \
 		"if test -n \"${attr_name}\" && test -n \"${attr_val}\"; then " \
 			"fdt set /amba/spi@e0006000/ad9361-phy@0 ${attr_name} ${attr_val} || fdt set /axi/spi@e0006000/ad9361-phy@0 ${attr_name} ${attr_val}; " \
+			"fdt set /amba/spi@e0006000/ad9361-phy@0 ${attr_name} ${attr_val} || fdt set /amba/spi@e0006000/ad9361-phy@0 ${attr_name} ${attr_val}; " \
                 "fi; " \
 		"if test \"${mode}\" = \"1r1t\" && test \"${model}\" = \"Analog Devices PlutoSDR Rev.C (Z7010/AD9363)\"; then " \
 			"fdt rm /amba/spi@e0006000/ad9361-phy@0 adi,2rx-2tx-mode-enable || fdt rm /axi/spi@e0006000/ad9361-phy@0 adi,2rx-2tx-mode-enable; " \
 			"fdt set /fpga-axi/cf-ad9361-dds-core-lpc@79024000 compatible adi,axi-ad9364-dds-6.00.a; " \
 		"fi; " \
+		"if test \"${mode}\" = \"1r1t\" && test \"${model}\" = \"Analog Devices ANTSDR Rev.C (Z7020/AD9363)\"; then " \
+			"fdt rm /amba/spi@e0006000/ad9361-phy@0 adi,2rx-2tx-mode-enable || fdt rm /amba/spi@e0006000/ad9361-phy@0 adi,2rx-2tx-mode-enable; " \
+			"fdt set /fpga-axi/cf-ad9361-dds-core-lpc@79024000 compatible adi,axi-ad9364-dds-6.00.a; " \
+		"fi; " \
 		"if test -n \"${cs_gpio}\" && test \"${model}\" = \"Analog Devices PlutoSDR Rev.C (Z7010/AD9363)\"; then " \
+			"fdt set /amba/axi_quad_spi@7C430000/ cs-gpios \"<0x06 ${cs_gpio} 0>\" || fdt set /axi/axi_quad_spi@7C430000/ cs-gpios \"<0x06 ${cs_gpio} 0>\"; " \
+		"fi; " \
+		"if test -n \"${cs_gpio}\" && test \"${model}\" = \"Analog Devices ANTSDR Rev.C (Z7020/AD9363)\"; then " \
 			"fdt set /amba/axi_quad_spi@7C430000/ cs-gpios \"<0x06 ${cs_gpio} 0>\" || fdt set /axi/axi_quad_spi@7C430000/ cs-gpios \"<0x06 ${cs_gpio} 0>\"; " \
 		"fi; " \
 		"if test -n \"${attr_val}\" && test \"${attr_val}\" = \"ad9364\"; then " \
 			"fdt set /fpga-axi/cf-ad9361-dds-core-lpc@79024000 compatible adi,axi-ad9364-dds-6.00.a; " \
 			"if test ! \"${mode}\" = \"1r1t\"; then " \
 				"fdt rm /amba/spi@e0006000/ad9361-phy@0 adi,2rx-2tx-mode-enable || fdt rm /axi/spi@e0006000/ad9361-phy@0 adi,2rx-2tx-mode-enable; " \
+				"fdt rm /amba/spi@e0006000/ad9361-phy@0 adi,2rx-2tx-mode-enable || fdt rm /amba/spi@e0006000/ad9361-phy@0 adi,2rx-2tx-mode-enable; " \
 				"setenv mode 1r1t; " \
 				"saveenv; " \
 			"fi; " \
@@ -319,7 +334,6 @@
 	"adi_loadvals=fdt addr ${fit_load_address} && fdt get value fdt_choosen /configurations/${fit_config}/ fdt && " \
 		"fdt get addr fdtaddr /images/${fdt_choosen} data && fdt addr ${fdtaddr}; "\
 		"fdt get value model / model; " \
-		"if test \"${model}\" \> \"Analog Devices Pluto\"; then " \
 			"run adi_loadvals_pluto; " \
 		"fi; \0" \
 	"qspiboot_extraenv=sf read ${extraenv_load_address} 0xFF000 0x1000 && " \
@@ -342,8 +356,13 @@
 		"fi; " \
 		"envversion;setenv bootargs console=ttyPS0,115200 maxcpus=${maxcpus} rootfstype=ramfs root=/dev/ram0 rw earlyprintk clk_ignore_unused uio_pdrv_genirq.of_id=uio_pdrv_genirq uboot=\"${uboot-version}\" && " \
 		"bootm ${fit_load_address}#${fit_config} || echo BOOT failed entering DFU mode ... && run dfu_sf \0" \
-	"qspiboot=set stdout nulldev;adi_hwref;test -n $PlutoRevA || gpio input 14 && set stdout serial@e0001000 && sf probe && sf protect lock 0 100000 && run dfu_sf;  " \
-		"set stdout serial@e0001000;" \
+	"qspiboot=if test \"${model}\" = \"Analog Devices ANTSDR Rev.C (Z7020/AD9363)\"; then " \
+	"set stdout nulldev;adi_hwref;test -n $PlutoRevA || gpio input 14 && set stdout serial@e0000000 && sf probe && sf protect lock 0 100000 && run dfu_sf;  " \
+	"set stdout serial@e0000000;" \
+	"else " \
+	"set stdout nulldev;adi_hwref;test -n $PlutoRevA || gpio input 14 && set stdout serial@e0001000 && sf probe && sf protect lock 0 100000 && run dfu_sf;  " \
+	"set stdout serial@e0001000;" \
+	"fi; " \
 		"itest *f8000258 == 480003 && run clear_reset_cause && run dfu_sf; " \
 		"itest *f8000258 == 480007 && run clear_reset_cause && run ramboot_verbose; " \
 		"itest *f8000258 == 480006 && run clear_reset_cause && run qspiboot_verbose; " \
@@ -362,13 +381,18 @@
 			"echo Running uenvcmd ...; " \
 			"run uenvcmd; " \
 		"fi\0" \
-		"sdboot=if mmcinfo; then " \
-			"adi_hwref;echo Copying Linux from SD to RAM... && " \
-			"run adi_loadvals ; "\
+	"loaddfu=if mmc rescan; then fatload mmc 0 0x1000 boot.dfu; sf probe;"\
+			"sf update 0x1000 0x0 0x100000; fatload mmc 0 ${fit_load_address} e200.dfu;"\
+			"sf update ${fit_load_address} 0x200000 0x1E00000;"\
+			"fatload mmc 0 0x20000 uboot-env.dfu; sf update 0x20000 0x100000 0x20000;"\
+			"bootm ${fit_load_address}#${fit_config};fi\0"\
+	"sdboot=if mmcinfo; then " \
+			"run uenvboot; " \
+			"echo Copying Linux from SD to RAM... && " \
 			"load mmc 0 ${fit_load_address} ${kernel_image} && " \
 			"load mmc 0 ${devicetree_load_address} ${devicetree_image} && " \
 			"load mmc 0 ${ramdisk_load_address} ${ramdisk_image} && " \
-			"bootm ${fit_load_address}#${fit_config} ${ramdisk_load_address} ${devicetree_load_address} || set stdout serial@e0001000; " \
+			"bootm ${fit_load_address} ${ramdisk_load_address} ${devicetree_load_address}; " \
 		"fi\0" \
 	"usbboot=if usb start; then " \
 			"run uenvboot; " \
