@@ -53,15 +53,9 @@ include scripts/$(TARGET).mk
 
 ifeq (, $(shell which dfu-suffix))
 $(warning "No dfu-utils in PATH consider doing: sudo apt-get install dfu-util")
-TARGETS = build/$(TARGET).frm build/$(TARGET)_boot.frm sdimg
-ifeq (1, ${HAVE_VIVADO})
-TARGETS += jtag-bootstrap
-endif
+TARGETS = build/pluto.frm build/boot.frm sdimg
 else
-TARGETS = build/$(TARGET).dfu build/uboot-env.dfu build/$(TARGET).frm  build/boot.dfu build/$(TARGET)_boot.frm sdimg
-ifeq (1, ${HAVE_VIVADO})
-TARGETS += jtag-bootstrap
-endif
+TARGETS = build/$(TARGET).dfu build/uboot-env.dfu build/pluto.frm  build/boot.dfu build/boot.frm sdimg
 endif
 
 ifeq ($(findstring $(TARGET),$(SUPPORTED_TARGETS)),)
@@ -274,17 +268,18 @@ build/boot.bin: build/fsbl.elf build/u-boot.elf
 	@echo img:{[bootloader] $^ } > build/boot.bif
 ifeq (1, ${HAVE_VIVADO})
 	bash -c "source $(VIVADO_SETTINGS) && bootgen -image build/boot.bif -w -o $@"
+	cp build/sdk/fsbl/Release/fsbl.elf build/fsbl.elf
 else
 	cp datv/bitstream/$(TARGET)/fsbl.elf build/fsbl.elf
 	bash -c "bootgen -image build/boot.bif -w -o $@"
 endif
 ### MSD update firmware file ###
 
-build/$(TARGET).frm: build/$(TARGET).itb
+build/pluto.frm: build/$(TARGET).itb
 	md5sum $< | cut -d ' ' -f 1 > $@.md5
 	cat $< $@.md5 > $@
 
-build/$(TARGET)_boot.frm: build/boot.bin build/uboot-env.bin scripts/target_mtd_info.key
+build/boot.frm: build/boot.bin build/uboot-env.bin scripts/target_mtd_info.key
 	cat $^ | tee $@ | md5sum | cut -d ' ' -f1 | tee -a $@
 
 ### DFU update firmware file ###
@@ -344,7 +339,7 @@ clean:
 	rm -rf build/*
 
 zip-all: $(TARGETS)
-	zip -j build/$(ZIP_ARCHIVE_PREFIX)-fw-$(VERSION).zip $^
+	mkdir -p Release && cd build &&	zip -r ../Release/$(ZIP_ARCHIVE_PREFIX)-fw-$(VERSION).zip *.dfu *.frm sdimg
 
 dfu-$(TARGET): build/$(TARGET).dfu
 	dfu-util -D build/$(TARGET).dfu -a firmware.dfu
