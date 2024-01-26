@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build-x86_64:
@@ -27,17 +27,9 @@ jobs:
       run: |
         cd plutosdr-fw && make
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+    - uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        tag_name: plutodvb2_${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-    - name: Upload Assets to Release with a wildcard
-      uses: csexton/release-asset-action@v2
-      with:
-        pattern: "Release/*.zip"
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        release-url: ${{ steps.create_release.outputs.upload_url }}
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: true
+        files: |
+            Release/*.zip
