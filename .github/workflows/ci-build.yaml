@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    - uses: actions/checkout@v4.1.1
     - name: Install dependencies
       shell: bash
       run: |
@@ -18,16 +19,16 @@ jobs:
            bison flex libncurses5-dev libssl-dev bc cpio rsync cmake \
            libgtk-3-0 xz-utils libgmp-dev libmpc-dev bootgen-xlnx
 
-    - name: Checkout
-      shell: bash
-      run: |
-        git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
+    # - name: Checkout
+    #   shell: bash
+    #   run: |
+    #     git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
     
 
     - name: Build PlutoDatvFirmware
       shell: bash
       run: |
-        cd plutosdr-fw && make
+        make
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
