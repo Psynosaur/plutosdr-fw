@@ -1,10 +1,13 @@
-on: [push, pull_request]
-
+on:
+  push:
+    tags:
+      - '*'
 jobs:
   build-x86_64:
     runs-on: ubuntu-latest
     
     steps:
+    - uses: actions/checkout@v4.1.1
     - name: Install dependencies
       shell: bash
       run: |
@@ -14,45 +17,24 @@ jobs:
            libgtk2.0-0 git \
            zip unzip dfu-util fakeroot u-boot-tools device-tree-compiler mtools \
            bison flex libncurses5-dev libssl-dev bc cpio rsync cmake \
-           libgtk-3-0 xz-utils libgmp-dev libmpc-dev
+           libgtk-3-0 xz-utils libgmp-dev libmpc-dev bootgen-xlnx
 
-    - name: Checkout
-      shell: bash
-      run: |
-        git clone --recursive --depth 1 --shallow-submodules https://github.com/F5OEO/plutosdr-fw
+    # - name: Checkout
+    #   shell: bash
+    #   run: |
+    #     git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
     
 
     - name: Build PlutoDatvFirmware
       shell: bash
       run: |
-        cd plutosdr-fw && make
+        make
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+    - uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        tag_name: plutodvb2_${{ github.run_number }}
-        release_name: Release ${{ github.run_number }}
-    - name: Upload Release Asset dfu
-      id: upload-release-asset-dfu 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./plutosdr-fw/build/pluto.dfu
-        asset_name: pluto.dfu
-        asset_content_type: application/octet-stream
-    - name: Upload Release Asset frm
-      id: upload-release-asset-frm 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./plutosdr-fw/build/pluto.frm
-        asset_name: pluto.frm
-        asset_content_type: application/octet-stream
-    
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: PlutoDVB2_${{  github.ref_name }}
+        title: Release ${{  github.ref_name }}
+        prerelease: true
+        files: |
+            Release/**.zip

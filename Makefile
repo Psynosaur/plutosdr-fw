@@ -17,8 +17,9 @@ NCORES = $(shell grep -c ^processor /proc/cpuinfo)
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 VSUBDIRS = maia-sdr buildroot linux u-boot-xlnx
 
-VERSION=$(shell git -C pluto-ori-ps describe --abbrev=4 --always --tags)
+VERSION=$(shell git describe --abbrev=4 --always --tags)
 PATCH=$(shell cd datv && ./applypatch.sh )
+$(shell git log --pretty=format:"%h - %ad : %s" > datv/board/pluto/overlay/root/fwhistory.txt)
 #LATEST_TAG=$(shell git describe --abbrev=0 --tags)
 LATEST_TAG=maia-sdr-v0.4.1
 UBOOT_VERSION=$(shell echo -n "PlutoSDR " && cd u-boot-xlnx && git describe --abbrev=0 --dirty --always --tags)
@@ -42,23 +43,19 @@ ifneq (1, ${PATCH})
 endif
 
 TARGET ?= pluto
-SUPPORTED_TARGETS:=pluto sidekiqz2 plutoplus
+SUPPORTED_TARGETS:=pluto sidekiqz2 plutoplus e200
 XSA_FILE ?= datv/bitstream/${TARGET}/system_top.xsa
+
+$(warning *** Building target $(TARGET),)
 
 # Include target specific constants
 include scripts/$(TARGET).mk
 
 ifeq (, $(shell which dfu-suffix))
 $(warning "No dfu-utils in PATH consider doing: sudo apt-get install dfu-util")
-TARGETS = build/$(TARGET).frm
-ifeq (1, ${HAVE_VIVADO})
-TARGETS += build/boot.frm jtag-bootstrap
-endif
+TARGETS = build/pluto.frm build/boot.frm sdimg
 else
-TARGETS = build/$(TARGET).dfu build/uboot-env.dfu build/$(TARGET).frm
-ifeq (1, ${HAVE_VIVADO})
-TARGETS += build/boot.dfu build/boot.frm jtag-bootstrap
-endif
+TARGETS = build/$(TARGET).dfu build/uboot-env.dfu build/pluto.frm  build/boot.dfu build/boot.frm sdimg
 endif
 
 ifeq ($(findstring $(TARGET),$(SUPPORTED_TARGETS)),)
@@ -74,7 +71,7 @@ endif
 TARGET_DTS_FILES:=$(foreach dts,$(TARGET_DTS_FILES),build/$(dts))
 
 TOOLCHAIN:
-	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
+	make -C buildroot ARCH=arm zynq_pluto_defconfig
 	make -C buildroot toolchain
 
 build:
@@ -106,14 +103,19 @@ build/uboot-env.bin: build/uboot-env.txt
 
 linux/arch/arm/boot/zImage: TOOLCHAIN
 	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_$(TARGET)_linux_defconfig zImage UIMAGE_LOADADDR=0x8000
+	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_$(TARGET)_linux_defconfig uImage UIMAGE_LOADADDR=0x8000
 ##	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) defconfig zynq_$(TARGET)_defconfig
 ##$(TOOLS_PATH) make BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE=$(ABSOLUTE_PATH)/datv/configs/zynq_$(TARGET)datv_linux_defconfig -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
 
 .PHONY: linux/arch/arm/boot/zImage
-
+.PHONY: linux/arch/arm/boot/uImage
 
 build/zImage: linux/arch/arm/boot/zImage | build
 	cp $< $@
+
+build/uImage: linux/arch/arm/boot/uImage | build
+	cp $< $@
+
 
 ### Device Tree ###
 
@@ -177,7 +179,7 @@ $(BR2_EXTERNAL)/board/pluto/overlay/lib/modules/nco_counter_core.ko: linux_drive
 
 ## Plutostream 
 pluto-ori-ps/pluto_stream: TOOLCHAIN
-	$(TOOLS_PATH)  make pluto_stream -C pluto-ori-ps ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
+	$(TOOLS_PATH)  make pluto_stream -C pluto-ori-ps VER=$(VERSION) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
 
 .PHONY: pluto-ori-ps/pluto_stream
 
@@ -220,7 +222,10 @@ endif
 
 .PHONY: buildroot/output/images/rootfs.cpio.gz
 
+
+## Invoke again buildroot to add datv bin in rootfs
 build/rootfs.cpio.gz: buildroot/output/images/rootfs.cpio.gz $(BR2_EXTERNAL)/board/pluto/overlay/lib/modules/nco_counter_core.ko $(BR2_EXTERNAL)/board/pluto/overlay/root/pluto_mqtt_ctrl $(BR2_EXTERNAL)/board/pluto/overlay/root/pluto_stream $(BR2_EXTERNAL)/board/pluto/overlay/root/datv/longmynd | build
+	make -C buildroot BUSYBOX_CONFIG_FILE=$(BR2_EXTERNAL)/board/pluto/busybox-1.25.0.config all
 	cp $< $@
 
 build/$(TARGET).itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz $(TARGET_DTS_FILES) build/system_top.bit
@@ -234,14 +239,24 @@ else ifneq ($(XSA_URL),)
 else ifeq (1, ${HAVE_VIVADO})
 #bash -c "source $(VIVADO_SETTINGS) && make -C maia-sdr/maia-hdl/projects/$(TARGET) && cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).sdk/system_top.xsa $@"
 #unzip -l $@ | grep -q ps7_init || cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
-	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori && cp ../hdl/projects/pluto-ori/$(TARGET).sdk/system_top.xsa $@"
-	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+ifeq ($(TARGET),pluto)
+	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori && cp ../hdl/projects/pluto-ori/pluto.sdk/system_top.xsa $@"
+	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori/pluto.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+endif	
+ifeq ($(TARGET),plutoplus)
+	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori-plus && cp ../hdl/projects/pluto-ori-plus/pluto.sdk/system_top.xsa $@"
+	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori-plus/pluto.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+endif
+ifeq ($(TARGET),e200)
+	bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori-e200 && cp ../hdl/projects/pluto-ori-e200/e200.sdk/system_top.xsa $@"
+	unzip -l $@ | grep -q ps7_init || cp ../hdl/projects/pluto-ori-e200/e200.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+endif	
 #bash -c "source $(VIVADO_SETTINGS) && make -C ../hdl/projects/pluto-ori-plus"
 endif
 
 ### TODO: Build system_top.xsa from src if dl fails ...
 
-build/sdk/fsbl/Release/fsbl.elf build/system_top.bit : build/system_top.xsa
+build/fsbl.elf build/system_top.bit : build/system_top.xsa
 	rm -Rf build/sdk
 ifeq (1, ${HAVE_VIVADO})
 	bash -c "source $(VIVADO_SETTINGS) && xsct scripts/create_fsbl_project.tcl"
@@ -249,13 +264,18 @@ else
 	unzip -o build/system_top.xsa system_top.bit -d build
 endif
 
-build/boot.bin: build/sdk/fsbl/Release/fsbl.elf build/u-boot.elf
+build/boot.bin: build/fsbl.elf build/u-boot.elf
 	@echo img:{[bootloader] $^ } > build/boot.bif
+ifeq (1, ${HAVE_VIVADO})
 	bash -c "source $(VIVADO_SETTINGS) && bootgen -image build/boot.bif -w -o $@"
-
+	cp build/sdk/fsbl/Release/fsbl.elf build/fsbl.elf
+else
+	cp datv/bitstream/$(TARGET)/fsbl.elf build/fsbl.elf
+	bash -c "bootgen -image build/boot.bif -w -o $@"
+endif
 ### MSD update firmware file ###
 
-build/$(TARGET).frm: build/$(TARGET).itb
+build/pluto.frm: build/$(TARGET).itb
 	md5sum $< | cut -d ' ' -f 1 > $@.md5
 	cat $< $@.md5 > $@
 
@@ -274,6 +294,36 @@ build/$(TARGET).dfu: build/$(TARGET).itb
 	dfu-suffix -a $<.tmp -v $(DEVICE_VID) -p $(DEVICE_PID)
 	mv $<.tmp $@
 
+SDIMGDIR = build/sdimg
+sdimg: build | build/rootfs.cpio.gz
+	mkdir -p $(SDIMGDIR)
+	cp datv/bitstream/$(TARGET)/fsbl.elf 	$(SDIMGDIR)/fsbl.elf  
+	cp build/system_top.bit 	$(SDIMGDIR)/system_top.bit
+	cp build/u-boot.elf 			$(SDIMGDIR)/u-boot.elf
+	cp linux/arch/arm/boot/uImage	$(SDIMGDIR)/uImage
+
+ifeq ($(TARGET),pluto)
+	cp build/zynq-pluto-sdr-maiasdr.dtb 	$(SDIMGDIR)/devicetree.dtb
+endif	
+ifeq ($(TARGET),plutoplus)
+	cp build/zynq-plutoplus-maiasdr.dtb 	$(SDIMGDIR)/devicetree.dtb
+endif	
+ifeq ($(TARGET),e200)
+	cp build/zynq-e200.dtb 	$(SDIMGDIR)/devicetree.dtb
+endif	
+	cp build/uboot-env.txt  		$(SDIMGDIR)/uEnv.txt
+	cp build/rootfs.cpio.gz  		$(SDIMGDIR)/ramdisk.image.gz
+	mkimage -A arm -T ramdisk -C gzip -d $(SDIMGDIR)/ramdisk.image.gz $(SDIMGDIR)/uramdisk.image.gz
+	touch 	$(SDIMGDIR)/boot.bif
+	echo "img : {[bootloader] $(SDIMGDIR)/fsbl.elf  $(SDIMGDIR)/system_top.bit  $(SDIMGDIR)/u-boot.elf}" >  $(SDIMGDIR)/boot.bif
+	bootgen -image $(SDIMGDIR)/boot.bif -w -o i $(SDIMGDIR)/BOOT.bin
+	rm $(SDIMGDIR)/fsbl.elf
+	rm $(SDIMGDIR)/system_top.bit
+	rm $(SDIMGDIR)/u-boot.elf
+	rm $(SDIMGDIR)/ramdisk.image.gz 
+	rm $(SDIMGDIR)/boot.bif
+
+
 clean-build:
 	rm -f $(notdir $(wildcard build/*))
 	rm -rf build/*
@@ -289,7 +339,7 @@ clean:
 	rm -rf build/*
 
 zip-all: $(TARGETS)
-	zip -j build/$(ZIP_ARCHIVE_PREFIX)-fw-$(VERSION).zip $^
+	mkdir -p Release && cd build &&	zip -r ../Release/$(ZIP_ARCHIVE_PREFIX)-fw-$(VERSION).zip *.dfu *.frm sdimg
 
 dfu-$(TARGET): build/$(TARGET).dfu
 	dfu-util -D build/$(TARGET).dfu -a firmware.dfu

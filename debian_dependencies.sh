@@ -4,4 +4,4 @@ sudo apt-get install -y make gcc g++ python3 python3-dev python3-pip \
            libgtk2.0-0 git \
            zip unzip dfu-util fakeroot u-boot-tools device-tree-compiler mtools \
            bison flex libncurses5-dev libssl-dev bc cpio rsync cmake \
-           libgtk-3-0 xz-utils libgmp-dev libmpc-dev 
+           libgtk-3-0 xz-utils libgmp-dev libmpc-dev bootgen-xlnx 
