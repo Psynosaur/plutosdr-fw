@@ -1,4 +1,4 @@
-# Maia SDR ADALM Pluto firmware
+# Maia SDR ADALM Pluto firmwares
 
 This repository contains the modified ADALM Pluto firmware for the
 [Maia SDR](https://maia-sdr.org) project. See
