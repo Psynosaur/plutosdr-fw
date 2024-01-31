@@ -1,5 +1,7 @@
-on: [push]
-
+on:
+  push:
+    tags:
+      - '*'
 jobs:
   build-x86_64:
     runs-on: ubuntu-latest
@@ -30,6 +32,8 @@ jobs:
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: PlutoDVB2_${{  github.ref_name }}
+        title: Release ${{  github.ref_name }}
         prerelease: true
         files: |
-            Release/*.zip
+            Release/**.zip
