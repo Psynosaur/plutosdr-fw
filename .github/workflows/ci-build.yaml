@@ -26,12 +26,12 @@ jobs:
     #   shell: bash
     #   run: |
     #     git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
-    
+    # prog1 & prog2 && fg
 
     - name: Build PlutoDatvFirmware
       shell: bash
       run: |
-        cd plutosdr-fw && make && TARGET=plutoplus make && TARGET=e200 make
+        cd plutosdr-fw && make & TARGET=plutoplus make & TARGET=e200 make && fg
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
