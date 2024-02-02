@@ -29,30 +29,24 @@ jobs:
     #   run: |
     #     git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
     # prog1 & prog2 && fg
-    - name: Cache build output
-      uses: actions/cache@v2
+    - name: Cache build
       id: cache-build
+      uses: actions/cache@v4
       with:
         # Path of the directory to cache
         path: /home/runner/work/plutosdr-fw/plutosdr-fw/
         # Unique key for the cache
         key: build-${{ github.sha }}
 
-    - name: Build code
+    - name: Build PlutoDatvFirmware from scratch
+      if: steps.cache-primes.outputs.cache-hit != 'true'
       run: |
-        if [ -d "/home/runner/work/plutosdr-fw/plutosdr-fw/" ] && [ "$(ls -A /home/runner/work/plutosdr-fw/plutosdr-fw/)" ];
-        then 
-          echo "Build cache hit"
-        else
-          echo "Build cache miss - building from scratch"
-          # Place your build commands here
-        fi
-    - name: Build PlutoDatvFirmware
-      shell: bash
-      run: |
-        make -j
-        # TARGET=plutoplus make -j 
-        # TARGET=e200 make -j 
+        make 
+        # TARGET=plutoplus make 
+        # TARGET=e200 make 
+
+    - name: Use cache folder
+      run: echo "build cache hit"
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
