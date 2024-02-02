@@ -10,6 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4.1.1
       with:
+        clean: false
         submodules: recursive
     - name: Install dependencies
       shell: bash
@@ -28,13 +29,30 @@ jobs:
     #   run: |
     #     git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
     # prog1 & prog2 && fg
+    - name: Cache build output
+      uses: actions/cache@v2
+      id: cache-build
+      with:
+        # Path of the directory to cache
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/
+        # Unique key for the cache
+        key: build-${{ github.sha }}
 
+    - name: Build code
+      run: |
+        if [ -d "/home/runner/work/plutosdr-fw/plutosdr-fw/" ] && [ "$(ls -A /home/runner/work/plutosdr-fw/plutosdr-fw/)" ];
+        then 
+          echo "Build cache hit"
+        else
+          echo "Build cache miss - building from scratch"
+          # Place your build commands here
+        fi
     - name: Build PlutoDatvFirmware
       shell: bash
       run: |
         make -j
-        TARGET=plutoplus make -j 
-        TARGET=e200 make -j 
+        # TARGET=plutoplus make -j 
+        # TARGET=e200 make -j 
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
@@ -43,4 +61,4 @@ jobs:
         title: Release ${{  github.ref_name }}
         prerelease: false
         files: |
-            plutosdr-fw/Release/**.zip
+            Release/**.zip
