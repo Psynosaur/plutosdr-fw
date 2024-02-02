@@ -36,7 +36,7 @@ jobs:
         # Path of the directory to cache
         path: /home/runner/work/plutosdr-fw/plutosdr-fw/
         # Unique key for the cache
-        key: build-${{ github.sha }}
+        key: build-${{ runner.os }}
 
     - name: Build PlutoDatvFirmware from scratch
       if: steps.cache-primes.outputs.cache-hit != 'true'
