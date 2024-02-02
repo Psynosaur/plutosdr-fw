@@ -32,7 +32,10 @@ jobs:
     - name: Build PlutoDatvFirmware
       shell: bash
       run: |
-        cd plutosdr-fw && make & TARGET=plutoplus make & TARGET=e200 make && fg
+        ls -al 
+        cd plutosdr-fw 
+        make & TARGET=plutoplus make & TARGET=e200 make 
+        fg
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
