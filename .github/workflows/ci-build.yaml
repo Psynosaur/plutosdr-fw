@@ -33,7 +33,6 @@ jobs:
       shell: bash
       run: |
         ls -al 
-        cd plutosdr-fw 
         make & TARGET=plutoplus make & TARGET=e200 make 
         fg
 
