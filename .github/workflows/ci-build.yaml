@@ -4,7 +4,7 @@ on:
       - '*'
 jobs:
   build-x86_64:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     
     steps:
     - uses: actions/checkout@v4.1.1
