@@ -32,9 +32,9 @@ jobs:
     - name: Build PlutoDatvFirmware
       shell: bash
       run: |
-        ls -al 
-        make 
-        TARGET=plutoplus make & TARGET=e200 make 
+        make -j
+        TARGET=plutoplus make -j 
+        TARGET=e200 make -j 
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
