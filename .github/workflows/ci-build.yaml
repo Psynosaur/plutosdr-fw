@@ -39,7 +39,7 @@ jobs:
         key: build-${{ runner.os }}
 
     - name: Build PlutoDatvFirmware from scratch
-      if: steps.cache-primes.outputs.cache-hit != 'true'
+      if: steps.cache-build.outputs.cache-hit != 'true'
       run: |
         make 
         # TARGET=plutoplus make 
