@@ -36,6 +36,6 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: PlutoDVB2_${{  github.ref_name }}
         title: Release ${{  github.ref_name }}
-        prerelease: true
+        prerelease: false
         files: |
             plutosdr-fw/Release/**.zip
