@@ -18,7 +18,7 @@ on:
 env:
   VERSION: ${{ inputs.version }}
 
-run-name: Build plutosdr-fw run ${{ github.run_number }}
+run-name: Build plutosdr-fw run for tag - PlutoDVB2_${{ inputs.version }}
 jobs:
   build-x86_64:
     # runs-on: self-hosted
