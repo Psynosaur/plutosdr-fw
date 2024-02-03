@@ -67,7 +67,20 @@ jobs:
           Linux-cache-198acefdaf363c35deacc9cf5d1b64835f7a1af569cd8e7ea820fe642612c055
           Linux-cache-
           Linux-
-          
+    - if: ${{ inputs.build_toolchain == 'true' }}
+      name: build_toolchain 
+      run: |
+        # run tool chain building.
+        echo "build_toolchain"
+      env:
+        LEVEL: ${{ inputs.logLevel }}
+    - if: ${{ inputs.build_linux == 'true' }}
+      name: build_linux 
+      run: |
+        echo "build linux"
+      env:
+        # set this on environment level for tools like make to pickup the variable...
+        LEVEL: ${{ inputs.logLevel }}
     - if: ${{ steps.cache-build.outputs.cache-hit != 'true' }}
       name: Build PlutoDatvFirmware from scratch
       continue-on-error: true
@@ -82,7 +95,6 @@ jobs:
     - name: Use cache folder
       run: |
         make zip-all
-
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
