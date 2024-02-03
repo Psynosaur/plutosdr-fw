@@ -17,6 +17,8 @@ on:
     
 env:
   VERSION: ${{ inputs.version }}
+
+run-name: Build plutosdr-fw run ${{ github.run_number }}
 jobs:
   build-x86_64:
     # runs-on: self-hosted
@@ -78,13 +80,13 @@ jobs:
         key: fw-cache-u-boot-xlnx
           
     - if: ${{ steps.cache-toolchain.outputs.cache-hit != 'true' }}
-      name: Build PlutoDatvFirmware - no cache found
+      name: Build PlutoDatvFirmware first build
       run: |
         make 
         TARGET=plutoplus make
         TARGET=e200 make 
 
-    - name: cache found
+    - name: Build PlutoDatvFirmware from cache
       run: |
         make 
         TARGET=plutoplus make
