@@ -21,7 +21,7 @@ jobs:
   build-x86_64:
     # runs-on: self-hosted
     runs-on: ubuntu-latest
-    environment: plutosdr-fw-ci
+    # environment: plutosdr-fw-ci
     permissions: write-all
     
     steps:
