@@ -2,7 +2,22 @@
 #   push:
 #     tags:
 #       - '*'
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      version:
+        description: 'Environment to run tests against'
+        type: environment
+        required: true
     
 jobs:
   build-x86_64:
@@ -54,6 +69,9 @@ jobs:
         make 
         TARGET=plutoplus make 
         TARGET=e200 make 
+      env:
+        LEVEL: ${{ inputs.logLevel }}
+        VERSION: ${{ inputs.version }}
 
     - name: Use cache folder
       run: |
