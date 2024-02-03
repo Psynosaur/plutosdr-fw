@@ -1,15 +1,18 @@
+# on:
+#   push:
+#     tags:
+#       - '*'
 on:
-  push:
-    tags:
-      - '*'
-env:
-  ACTIONS_RUNNER_DEBUG: true
-  ACTIONS_STEP_DEBUG: true
-
+  workflow_run:
+    workflows: ["build-x86_64"]
+    types: [requested]
+    branches:
+      - 'main/**'
 jobs:
   build-x86_64:
     # runs-on: self-hosted
     runs-on: ubuntu-latest
+    environment: plutosdr-fw-ci
     
     steps:
     - uses: actions/checkout@v4.1.1
