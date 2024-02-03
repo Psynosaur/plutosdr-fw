@@ -69,8 +69,6 @@ jobs:
         make 
         TARGET=plutoplus make
         TARGET=e200 make 
-      env:
-        VERSION: ${{ inputs.version }}
 
     - name: cache found
       run: |
