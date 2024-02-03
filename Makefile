@@ -17,7 +17,7 @@ NCORES = $(shell grep -c ^processor /proc/cpuinfo)
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 VSUBDIRS = maia-sdr buildroot linux u-boot-xlnx
 
-VERSION=$(shell git describe --abbrev=4 --always --tags)
+#VERSION=$(shell git describe --abbrev=4 --always --tags)
 PATCH=$(shell cd datv && ./applypatch.sh )
 $(shell git log --pretty=format:"%h - %ad : %s" > datv/board/pluto/overlay/root/fwhistory.txt)
 #LATEST_TAG=$(shell git describe --abbrev=0 --tags)

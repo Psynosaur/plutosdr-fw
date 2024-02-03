@@ -1,11 +1,28 @@
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      version:
+        description: 'Provide release tag, eg. 0.5.4'
+        type: string
+        required: true
+    
+env:
+  VERSION: ${{ inputs.version }}
 jobs:
   build-x86_64:
     # runs-on: self-hosted
     runs-on: ubuntu-latest
+    # environment: plutosdr-fw-ci
+    permissions: write-all
     
     steps:
     - uses: actions/checkout@v4.1.1
@@ -25,41 +42,45 @@ jobs:
            bison flex libncurses5-dev libssl-dev bc cpio rsync cmake \
            libgtk-3-0 xz-utils libgmp-dev libmpc-dev bootgen-xlnx
       
-    # - name: Checkout
-    #   shell: bash
-    #   run: |
-    #     git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
-    # prog1 & prog2 && fg
-    - name: Cache build
-      id: cache-build
+    - name: Cache toolchain
+      id: cache-toolchain
       uses: actions/cache@v4
       with:
-        # Path of the directory to cache
-        path: /home/runner/work/plutosdr-fw/plutosdr-fw/
-        # Unique key for the cache
-        key: ${{ runner.os }}-cache-${{ hashFiles('**/Makefile') }}
-        restore-keys: |
-          ${{ runner.os }}-cache-
-          ${{ runner.os }}-cache-${{ hashFiles('**/Makefile') }}
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/buildroot
+        key: fw-cache-toolchain
+        
+    - name: Cache linux
+      id: cache-linux
+      uses: actions/cache@v4
+      with:
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/linux
+        key: fw-cache-linux
 
-    - if: ${{ steps.cache-build.outputs.cache-hit != 'true' }}
-      name: Build PlutoDatvFirmware from scratch
-      continue-on-error: true
+    - name: Cache u-boot-xlnx
+      id: cache-u-boot-xlnx
+      uses: actions/cache@v4
+      with:
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/u-boot-xlnx
+        key: fw-cache-u-boot-xlnx
+          
+    - if: ${{ steps.cache-toolchain.outputs.cache-hit != 'true' }}
+      name: Build PlutoDatvFirmware - no cache found
       run: |
         make 
-        TARGET=plutoplus make 
+        TARGET=plutoplus make
         TARGET=e200 make 
 
-    - name: Use cache folder
+    - name: cache found
       run: |
-        make zip-all
-
+        make 
+        TARGET=plutoplus make
+        TARGET=e200 make
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: PlutoDVB2_${{  github.ref_name }}
-        title: Release ${{  github.ref_name }}
+        automatic_release_tag: PlutoDVB2_${{ inputs.version }}
+        title: Release ${{ inputs.version }}
         prerelease: false
         files: |
-            plutosdr-fw/Release/**.zip
+            Release/**.zip
