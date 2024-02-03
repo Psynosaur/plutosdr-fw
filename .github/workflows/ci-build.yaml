@@ -15,7 +15,7 @@ on:
         - warning
         - debug
       version:
-        description: 'Please provide release tag'
+        description: 'Provide release tag eg. 0.5.13' 
         type: string
         required: true
       build_linux:
