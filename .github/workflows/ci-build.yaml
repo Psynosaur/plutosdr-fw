@@ -44,48 +44,26 @@ jobs:
            bison flex libncurses5-dev libssl-dev bc cpio rsync cmake \
            libgtk-3-0 xz-utils libgmp-dev libmpc-dev bootgen-xlnx
       
-    - name: Cache toolchain
+    - name: Cache toolchain/linux/lib/linux_driver and u-boot-xlnx
       id: cache-toolchain
       uses: actions/cache@v4
       with:
-        path: /home/runner/work/plutosdr-fw/plutosdr-fw/buildroot
+        path: |
+          /home/runner/work/plutosdr-fw/plutosdr-fw/buildroot
+          /home/runner/work/plutosdr-fw/plutosdr-fw/lib
+          /home/runner/work/plutosdr-fw/plutosdr-fw/linux
+          /home/runner/work/plutosdr-fw/plutosdr-fw/linux_driver
+          /home/runner/work/plutosdr-fw/plutosdr-fw/u-boot-xlnx
         key: fw-cache-toolchain
-        
-    - name: Cache linux
-      id: cache-linux
-      uses: actions/cache@v4
-      with:
-        path: /home/runner/work/plutosdr-fw/plutosdr-fw/linux
-        key: fw-cache-linux
-
-    - name: Cache lib
-      id: cache-lib
-      uses: actions/cache@v4
-      with:
-        path: /home/runner/work/plutosdr-fw/plutosdr-fw/lib
-        key: fw-cache-lib
-
-    - name: Cache linux_driver
-      id: cache-linux_driver
-      uses: actions/cache@v4
-      with:
-        path: /home/runner/work/plutosdr-fw/plutosdr-fw/linux_driver
-        key: fw-cache-linux_driver
-
-    - name: Cache u-boot-xlnx
-      id: cache-u-boot-xlnx
-      uses: actions/cache@v4
-      with:
-        path: /home/runner/work/plutosdr-fw/plutosdr-fw/u-boot-xlnx
-        key: fw-cache-u-boot-xlnx
-          
+                  
     - if: ${{ steps.cache-toolchain.outputs.cache-hit != 'true' }}
       name: Build PlutoDatvFirmware first build
       run: |
         make 
         TARGET=plutoplus make
         TARGET=e200 make 
-
+        
+    - if: ${{ steps.cache-toolchain.outputs.cache-hit == 'true' }}
     - name: Build PlutoDatvFirmware from cache
       run: |
         make 
