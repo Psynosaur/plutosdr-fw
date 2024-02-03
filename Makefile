@@ -197,7 +197,7 @@ $(BR2_EXTERNAL)/board/pluto/overlay/root/pluto_mqtt_ctrl: pluto-ori-ps/pluto_mqt
 
 ## Longmynd
 longmynd/longmynd: TOOLCHAIN
-	$(TOOLS_PATH)  make -C longmynd ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
+	$(TOOLS_PATH)  env=local make longmynd -C longmynd ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
 
 .PHONY: longmynd/longmynd
 

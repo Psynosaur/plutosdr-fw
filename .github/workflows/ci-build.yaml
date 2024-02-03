@@ -12,6 +12,7 @@ jobs:
       with:
         clean: false
         submodules: recursive
+
     - name: Install dependencies
       shell: bash
       run: |
@@ -53,6 +54,7 @@ jobs:
       run: |
         make zip-all
 
+
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -60,4 +62,4 @@ jobs:
         title: Release ${{  github.ref_name }}
         prerelease: false
         files: |
-            Release/**.zip
+            plutosdr-fw/Release/**.zip
