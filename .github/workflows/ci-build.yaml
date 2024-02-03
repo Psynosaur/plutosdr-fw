@@ -69,14 +69,14 @@ jobs:
         # Unique key for the cache
         key: fw-cache-linux
           
-    - if: ${{ inputs.build_toolchain == 'true' }}
+    - if: ${{ inputs.build_toolchain = 'true' }}
       name: build_toolchain 
       run: |
         # run tool chain building. we could split this up.
         echo "build_toolchain"
       env:
         LEVEL: ${{ inputs.logLevel }}
-    - if: ${{ inputs.build_linux == 'true' }}
+    - if: ${{ inputs.build_linux = 'true' }}
       name: build_linux 
       run: |
         echo "build linux"
