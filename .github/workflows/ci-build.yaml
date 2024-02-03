@@ -34,11 +34,13 @@ jobs:
       id: cache-build
       uses: actions/cache@v4
       with:
+        fail-on-cache-miss: true
         # Path of the directory to cache
         path: /home/runner/work/plutosdr-fw/plutosdr-fw/
         # Unique key for the cache
         key: Linux-cache-198acefdaf363c35deacc9cf5d1b64835f7a1af569cd8e7ea820fe642612c055
         restore-keys: |
+          Linux-cache-198acefdaf363c35deacc9cf5d1b64835f7a1af569cd8e7ea820fe642612c055
           Linux-cache-
           Linux-
           
