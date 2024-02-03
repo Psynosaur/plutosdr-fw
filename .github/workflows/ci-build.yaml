@@ -4,10 +4,15 @@ on:
       - '*'
 jobs:
   build-x86_64:
-    runs-on: self-hosted
+    # runs-on: self-hosted
+    runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4.1.1
+      with:
+        clean: false
+        submodules: recursive
+
     - name: Install dependencies
       shell: bash
       run: |
@@ -19,17 +24,36 @@ jobs:
            zip unzip dfu-util fakeroot u-boot-tools device-tree-compiler mtools \
            bison flex libncurses5-dev libssl-dev bc cpio rsync cmake \
            libgtk-3-0 xz-utils libgmp-dev libmpc-dev bootgen-xlnx
+      
+    # - name: Checkout
+    #   shell: bash
+    #   run: |
+    #     git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
+    # prog1 & prog2 && fg
+    - name: Cache build
+      id: cache-build
+      uses: actions/cache@v4
+      with:
+        # Path of the directory to cache
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/
+        # Unique key for the cache
+        key: ${{ runner.os }}-cache-${{ hashFiles('**/Makefile') }}
+        restore-keys: |
+          ${{ runner.os }}-cache-
+          ${{ runner.os }}-cache-${{ hashFiles('**/Makefile') }}
 
-    - name: Checkout
-      shell: bash
+    - if: ${{ steps.cache-build.outputs.cache-hit != 'true' }}
+      name: Build PlutoDatvFirmware from scratch
+      continue-on-error: true
       run: |
-        git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
-    
+        make 
+        TARGET=plutoplus make 
+        TARGET=e200 make 
 
-    - name: Build PlutoDatvFirmware
-      shell: bash
+    - name: Use cache folder
       run: |
-        cd plutosdr-fw && make && TARGET=plutoplus make && TARGET=e200 make
+        make zip-all
+
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
