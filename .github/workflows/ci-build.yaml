@@ -32,6 +32,7 @@ jobs:
     # runs-on: self-hosted
     runs-on: ubuntu-latest
     environment: plutosdr-fw-ci
+    permissions: write-all
     
     steps:
     - uses: actions/checkout@v4.1.1
@@ -83,14 +84,12 @@ jobs:
         # set this on environment level for tools like make to pickup the variable...
         LEVEL: ${{ inputs.logLevel }}
     - if: ${{ steps.cache-toolchain.outputs.cache-hit != 'true' }}
-    - if: ${{ steps.cache-linux.outputs.cache-hit != 'true' }}
       name: Build PlutoDatvFirmware - no cache found
       run: |
-        make 
-        TARGET=plutoplus make 
-        TARGET=e200 make 
+        make VERSION=$VERSION
+        TARGET=plutoplus make VERSION=$VERSION
+        TARGET=e200 make VERSION=$VERSION
       env:
-        LEVEL: ${{ inputs.logLevel }}
         VERSION: ${{ inputs.version }}
 
     - name: cache found
