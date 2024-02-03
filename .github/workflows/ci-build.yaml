@@ -15,15 +15,9 @@ on:
         - warning
         - debug
       version:
-        description: 'Please provide release tag'
+        description: 'Provide release tag, eg. 0.5.4'
         type: string
         required: true
-      build_linux:
-        required: true
-        type: boolean
-      build_toolchain:
-        required: true
-        type: boolean
     
 env:
   VERSION: ${{ inputs.version }}
@@ -69,20 +63,6 @@ jobs:
         # Unique key for the cache
         key: fw-cache-linux
           
-    - if: ${{ inputs.build_toolchain = 'true' }}
-      name: build_toolchain 
-      run: |
-        # run tool chain building. we could split this up.
-        echo "build_toolchain"
-      env:
-        LEVEL: ${{ inputs.logLevel }}
-    - if: ${{ inputs.build_linux = 'true' }}
-      name: build_linux 
-      run: |
-        echo "build linux"
-      env:
-        # set this on environment level for tools like make to pickup the variable...
-        LEVEL: ${{ inputs.logLevel }}
     - if: ${{ steps.cache-toolchain.outputs.cache-hit != 'true' }}
       name: Build PlutoDatvFirmware - no cache found
       run: |
