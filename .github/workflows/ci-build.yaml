@@ -2,12 +2,8 @@
 #   push:
 #     tags:
 #       - '*'
-on:
-  workflow_run:
-    workflows: ["build-x86_64"]
-    types: [requested]
-    branches:
-      - 'main/**'
+on: workflow_dispatch
+    
 jobs:
   build-x86_64:
     # runs-on: self-hosted
