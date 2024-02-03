@@ -39,10 +39,9 @@ jobs:
         # Unique key for the cache
         key: ${{ runner.os }}-cache-${{ hashFiles('**/Makefile') }}
         restore-keys: |
-          Linux-build-
           ${{ runner.os }}-cache-
-          ${{ runner.os }}-cache-${{ hashFiles('**/Makefile') }}
-
+          ${{ runner.os }}-
+          
     - if: ${{ steps.cache-build.outputs.cache-hit != 'true' }}
       name: Build PlutoDatvFirmware from scratch
       continue-on-error: true
