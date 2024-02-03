@@ -17,6 +17,8 @@ on:
     
 env:
   VERSION: ${{ inputs.version }}
+
+run-name: Build plutosdr-fw run for tag - PlutoDVB2_${{ inputs.version }}
 jobs:
   build-x86_64:
     # runs-on: self-hosted
@@ -56,6 +58,20 @@ jobs:
         path: /home/runner/work/plutosdr-fw/plutosdr-fw/linux
         key: fw-cache-linux
 
+    - name: Cache lib
+      id: cache-lib
+      uses: actions/cache@v4
+      with:
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/lib
+        key: fw-cache-lib
+
+    - name: Cache linux_driver
+      id: cache-linux_driver
+      uses: actions/cache@v4
+      with:
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/linux_driver
+        key: fw-cache-linux_driver
+
     - name: Cache u-boot-xlnx
       id: cache-u-boot-xlnx
       uses: actions/cache@v4
@@ -64,13 +80,14 @@ jobs:
         key: fw-cache-u-boot-xlnx
           
     - if: ${{ steps.cache-toolchain.outputs.cache-hit != 'true' }}
-      name: Build PlutoDatvFirmware - no cache found
+      name: Build PlutoDatvFirmware first build
       run: |
         make 
         TARGET=plutoplus make
         TARGET=e200 make 
 
-    - name: cache found
+    - if: ${{ steps.cache-toolchain.outputs.cache-hit == 'true' }}
+      name: Build PlutoDatvFirmware from cache
       run: |
         make 
         TARGET=plutoplus make
