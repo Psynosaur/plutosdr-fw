@@ -18,6 +18,12 @@ on:
         description: 'Please provide release tag'
         type: string
         required: true
+      build_linux:
+        required: true
+        type: boolean
+      build_toolchain:
+        required: true
+        type: boolean
     
 jobs:
   build-x86_64:
