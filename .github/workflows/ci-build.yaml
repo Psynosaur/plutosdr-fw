@@ -49,8 +49,8 @@ jobs:
       continue-on-error: true
       run: |
         make 
-        # TARGET=plutoplus make 
-        # TARGET=e200 make 
+        TARGET=plutoplus make 
+        TARGET=e200 make 
 
     - name: Use cache folder
       run: |
