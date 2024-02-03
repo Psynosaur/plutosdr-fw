@@ -15,7 +15,7 @@ on:
         - warning
         - debug
       version:
-        description: 'Please provide run version'
+        description: 'Please provide release tag'
         type: string
         required: true
     
