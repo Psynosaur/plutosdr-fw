@@ -15,7 +15,7 @@ on:
         - warning
         - debug
       version:
-        description: 'Provide release tag eg. 0.5.13' 
+        description: 'Please provide release tag'
         type: string
         required: true
       build_linux:
@@ -25,6 +25,8 @@ on:
         required: true
         type: boolean
     
+env:
+  VERSION: ${{ inputs.version }}
 jobs:
   build-x86_64:
     # runs-on: self-hosted
@@ -49,28 +51,27 @@ jobs:
            bison flex libncurses5-dev libssl-dev bc cpio rsync cmake \
            libgtk-3-0 xz-utils libgmp-dev libmpc-dev bootgen-xlnx
       
-    # - name: Checkout
-    #   shell: bash
-    #   run: |
-    #     git clone --recursive --depth 1 https://github.com/F5OEO/plutosdr-fw
-    # prog1 & prog2 && fg
-    - name: Cache build
-      id: cache-build
+    - name: Cache toolchain
+      id: cache-toolchain
       uses: actions/cache@v4
       with:
-        # fail-on-cache-miss: true
         # Path of the directory to cache
-        path: /home/runner/work/plutosdr-fw/plutosdr-fw/
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/buildroot
         # Unique key for the cache
-        key: Linux-cache-198acefdaf363c35deacc9cf5d1b64835f7a1af569cd8e7ea820fe642612c055
-        restore-keys: |
-          Linux-cache-198acefdaf363c35deacc9cf5d1b64835f7a1af569cd8e7ea820fe642612c055
-          Linux-cache-
-          Linux-
+        key: fw-cache-toolchain
+    - name: Cache build
+      id: cache-linux
+      uses: actions/cache@v4
+      with:
+        # Path of the directory to cache
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/linux
+        # Unique key for the cache
+        key: fw-cache-linux
+          
     - if: ${{ inputs.build_toolchain == 'true' }}
       name: build_toolchain 
       run: |
-        # run tool chain building.
+        # run tool chain building. we could split this up.
         echo "build_toolchain"
       env:
         LEVEL: ${{ inputs.logLevel }}
@@ -81,9 +82,9 @@ jobs:
       env:
         # set this on environment level for tools like make to pickup the variable...
         LEVEL: ${{ inputs.logLevel }}
-    - if: ${{ steps.cache-build.outputs.cache-hit != 'true' }}
-      name: Build PlutoDatvFirmware from scratch
-      continue-on-error: true
+    - if: ${{ steps.cache-toolchain.outputs.cache-hit != 'true' }}
+    - if: ${{ steps.cache-linux.outputs.cache-hit != 'true' }}
+      name: Build PlutoDatvFirmware - no cache found
       run: |
         make 
         TARGET=plutoplus make 
@@ -92,15 +93,19 @@ jobs:
         LEVEL: ${{ inputs.logLevel }}
         VERSION: ${{ inputs.version }}
 
-    - name: Use cache folder
+    - name: cache found
       run: |
-        make zip-all
+        make 
+        TARGET=plutoplus make
+        TARGET=e200 make
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: PlutoDVB2_${{ inputs.version }}
-        title: Release ${{ inputs.version }}
+        automatic_release_tag: PlutoDVB2_$VERSION
+        title: Release $VERSION
         prerelease: false
         files: |
             plutosdr-fw/Release/**.zip
+      env:
+          VERSION: ${{ inputs.version }}
