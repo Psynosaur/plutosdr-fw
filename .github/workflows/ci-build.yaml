@@ -15,8 +15,8 @@ on:
         - warning
         - debug
       version:
-        description: 'Environment to run tests against'
-        type: environment
+        description: 'Please provide run version'
+        type: string
         required: true
     
 jobs:
