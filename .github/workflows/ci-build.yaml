@@ -19,8 +19,8 @@ env:
   VERSION: ${{ inputs.version }}
 jobs:
   build-x86_64:
-    runs-on: self-hosted
-    # runs-on: ubuntu-latest
+    # runs-on: self-hosted
+    runs-on: ubuntu-latest
     # environment: plutosdr-fw-ci
     permissions: write-all
     
@@ -55,6 +55,20 @@ jobs:
       with:
         path: /home/runner/work/plutosdr-fw/plutosdr-fw/linux
         key: fw-cache-linux
+
+    - name: Cache lib
+      id: cache-lib
+      uses: actions/cache@v4
+      with:
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/lib
+        key: fw-cache-lib
+
+    - name: Cache linux_driver
+      id: cache-linux_driver
+      uses: actions/cache@v4
+      with:
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/linux_driver
+        key: fw-cache-linux_driver
 
     - name: Cache u-boot-xlnx
       id: cache-u-boot-xlnx
