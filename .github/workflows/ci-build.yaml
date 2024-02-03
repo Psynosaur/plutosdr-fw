@@ -46,19 +46,22 @@ jobs:
       id: cache-toolchain
       uses: actions/cache@v4
       with:
-        # Path of the directory to cache
         path: /home/runner/work/plutosdr-fw/plutosdr-fw/buildroot
-        # Unique key for the cache
         key: fw-cache-toolchain
         
     - name: Cache linux
       id: cache-linux
       uses: actions/cache@v4
       with:
-        # Path of the directory to cache
         path: /home/runner/work/plutosdr-fw/plutosdr-fw/linux
-        # Unique key for the cache
         key: fw-cache-linux
+
+    - name: Cache u-boot-xlnx
+      id: cache-u-boot-xlnx
+      uses: actions/cache@v4
+      with:
+        path: /home/runner/work/plutosdr-fw/plutosdr-fw/u-boot-xlnx
+        key: fw-cache-u-boot-xlnx
           
     - if: ${{ steps.cache-toolchain.outputs.cache-hit != 'true' }}
       name: Build PlutoDatvFirmware - no cache found
