@@ -75,13 +75,13 @@ jobs:
         TARGET=plutoplus make
         TARGET=e200 make
 
-    # - uses: "marvinpinto/action-automatic-releases@latest"
-    #   with:
-    #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
-    #     automatic_release_tag: PlutoDVB2_$VERSION
-    #     title: Release $VERSION
-    #     prerelease: false
-    #     files: |
-    #         plutosdr-fw/Release/**.zip
-    #   env:
-    #       VERSION: ${{ inputs.version }}
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: PlutoDVB2_$VERSION
+        title: Release $VERSION
+        prerelease: false
+        files: |
+            Release/**.zip
+      env:
+          VERSION: ${{ inputs.version }}
