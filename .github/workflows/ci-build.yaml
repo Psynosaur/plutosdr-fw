@@ -32,17 +32,14 @@ jobs:
     - name: Cache build
       id: cache-build
       uses: actions/cache@v4
-      env:
-          cache-name: cache-output
       with:
         # Path of the directory to cache
         path: /home/runner/work/plutosdr-fw/plutosdr-fw/
         # Unique key for the cache
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Makefile') }}
+        key: ${{ runner.os }}-cache-${{ hashFiles('**/Makefile') }}
         restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+          ${{ runner.os }}-cache-
+          ${{ runner.os }}-cache-${{ hashFiles('**/Makefile') }}
 
     - if: ${{ steps.cache-build.outputs.cache-hit != 'true' }}
       name: Build PlutoDatvFirmware from scratch
