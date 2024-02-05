@@ -9,7 +9,7 @@ NAME=gpsd
 DAEMON=/usr/sbin/$NAME
 if [[ $SERIAL ]]; then
     if ! [ -L /dev/ttyACM0 ]; then
-        #ln -s /dev/$SERIAL /dev/ttyACM0
+        ln -s /dev/$SERIAL /dev/ttyACM0
         echo "symlinked - /dev/$SERIAL"
     else
         echo "Already symlinked - /dev/$SERIAL"
