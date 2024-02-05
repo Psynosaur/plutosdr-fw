@@ -3,8 +3,14 @@
 # Starts the gps daemon.
 #
 
+# FIND GPS USB SERIAL DEVICE  
+SERIAL=$(dmesg | grep 'cp210x' | awk '{print substr($0,length($0)-6,8)}' | tail -1)
 NAME=gpsd
 DAEMON=/usr/sbin/$NAME
+if [[ $SERIAL ]]; then
+    ln -s /dev/$SERIAL /dev/ttyACM0
+    echo "symlinked - /dev/$SERIAL"    
+fi
 DEVICES="/dev/ttyACM0"
 PIDFILE=/var/run/$NAME.pid
 GPSD_OPTIONS="-G -n -r"
