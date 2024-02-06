@@ -8,6 +8,7 @@ DAEMON=/usr/sbin/$NAME
 DEVICES="/dev/ttyACM0"
 PIDFILE=/var/run/$NAME.pid
 GPSD_OPTIONS="-G -n -r"
+GPSCTL_OPTIONS="-n"
 
 #################################################
 # FIND GPS USB SERIAL DEVICE  - CP210x - MTK-3301 
@@ -18,21 +19,23 @@ if [[ $SERIAL ]]; then
     if ! [ -L /dev/ttyACM0 ]; then
         ln -s /dev/$SERIAL /dev/ttyACM0
         echo "symlinked - /dev/$SERIAL"
-        gpsctl -s 115200
-        GPSD_OPTIONS="-G -n -r -s 115200"
     else
         echo "Already symlinked - /dev/$SERIAL"
-        gpsctl -s 115200
-        GPSD_OPTIONS="-G -n -r -s 115200"
     fi
+    # CMD=$(echo -ne "'$PMTK314,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0*29\r\n'" > /dev/$SERIAL)
+    # return only $GNZDA
+    # eval $CMD
+    GPSD_OPTIONS="-G -n -r -s 9600"
+    GPSCTL_OPTIONS="-n -s 9600"
+    echo "GPS options set for /dev/$SERIAL"
 fi
 #################################################
-
+    
 start() {
         printf "Starting $NAME: "
         start-stop-daemon -S -q -p $PIDFILE --exec $DAEMON -- -P $PIDFILE $DEVICES $GPSD_OPTIONS && echo "OK" || echo "Failed"
         sleep 3
-        gpsctl --nmea 
+        gpsctl $GPSCTL_OPTIONS
 }
 stop() {
         printf "Stopping $NAME: "
