@@ -3,21 +3,30 @@
 # Starts the gps daemon.
 #
 
-# FIND GPS USB SERIAL DEVICE  
-SERIAL=$(dmesg | grep 'cp210x' | awk '{print substr($0,length($0)-6,8)}' | tail -1)
 NAME=gpsd
 DAEMON=/usr/sbin/$NAME
+DEVICES="/dev/ttyACM0"
+PIDFILE=/var/run/$NAME.pid
+GPSD_OPTIONS="-G -n -r"
+
+#################################################
+# FIND GPS USB SERIAL DEVICE  - CP210x - MTK-3301 
+# AXN_5.10_3333_17072500, 0001, Quectel-L76B, 1.0
+#################################################
+SERIAL=$(dmesg | grep 'cp210x' | awk '{print substr($0,length($0)-6,8)}' | tail -1)
 if [[ $SERIAL ]]; then
     if ! [ -L /dev/ttyACM0 ]; then
         ln -s /dev/$SERIAL /dev/ttyACM0
         echo "symlinked - /dev/$SERIAL"
+        gpsctl -s 115200
+        GPSD_OPTIONS="-G -n -r -s 115200"
     else
         echo "Already symlinked - /dev/$SERIAL"
+        gpsctl -s 115200
+        GPSD_OPTIONS="-G -n -r -s 115200"
     fi
 fi
-DEVICES="/dev/ttyACM0"
-PIDFILE=/var/run/$NAME.pid
-GPSD_OPTIONS="-G -n -r"
+#################################################
 
 start() {
         printf "Starting $NAME: "
