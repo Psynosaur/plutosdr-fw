@@ -8,7 +8,7 @@ DAEMON=/usr/sbin/$NAME
 DEVICES="/dev/ttyACM0"
 PIDFILE=/var/run/$NAME.pid
 GPSD_OPTIONS="-G -n -r"
-GPSCTL_OPTIONS="-n"
+GPSCTL_OPTIONS="--nmea"
 
 #################################################
 # FIND GPS USB SERIAL DEVICE  - CP210x - MTK-3301 
@@ -26,7 +26,7 @@ if [[ $SERIAL ]]; then
     # return only $GNZDA
     # eval $CMD
     GPSD_OPTIONS="-G -n -r -s 9600"
-    GPSCTL_OPTIONS="-n -s 9600"
+    GPSCTL_OPTIONS="--nmea -s 9600"
     echo "GPS options set for /dev/$SERIAL"
 fi
 #################################################
