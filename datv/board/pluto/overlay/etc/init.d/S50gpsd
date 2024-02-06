@@ -24,7 +24,8 @@ if [[ $SERIAL ]]; then
     fi
     # CMD=$(echo -ne "'$PMTK314,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0*29\r\n'" > /dev/$SERIAL)
     # return only $GNZDA
-    # eval $CMD
+    # Set polling interval to 100ms/10Hz
+    # echo -ne '$PMTK220,100*2F\r\n' > /dev/ttyUSB0
     GPSD_OPTIONS="-G -n -r -s 115200"
     GPSCTL_OPTIONS="--nmea -s 115200"
     echo "GPS options set for /dev/$SERIAL"
@@ -36,6 +37,13 @@ start() {
         start-stop-daemon -S -q -p $PIDFILE --exec $DAEMON -- -P $PIDFILE $DEVICES $GPSD_OPTIONS && echo "OK" || echo "Failed"
         sleep 3
         gpsctl $GPSCTL_OPTIONS
+        if [[ $SERIAL ]]; then
+            echo -ne '\x24\x50\x4D\x54\x4B\x32\x32\x30\x2C\x31\x30\x30\x2A\x32\x46\x2F\r\n' > /dev/$SERIAL
+            echo -ne '\x24\x50\x4D\x54\x4B\x33\x31\x33\x2C\x31\x2A\x32\x45\x2E\r\n' > /dev/$SERIAL
+            echo -ne '\x24\x50\x4D\x54\x4B\x33\x31\x34\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x30\x2C\x31\x2C\x30\x2A\x32\x39\x29\r\n' > /dev/$SERIAL
+            echo -ne '\x24\x50\x4D\x54\x4B\x33\x38\x36\x2C\x32\x2A\x32\x31\x21\r\n' > /dev/$SERIAL 
+            echo -ne '\x24\x50\x4D\x54\x4B\x38\x38\x36\x2C\x34\x2A\x32\x43\x2C\r\n' > /dev/$SERIAL
+        fi
 }
 stop() {
         printf "Stopping $NAME: "
