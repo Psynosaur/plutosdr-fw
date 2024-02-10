@@ -14,7 +14,7 @@ GPSCTL_OPTIONS="--nmea"
 # FIND GPS USB SERIAL DEVICE  - CP210x - MTK-3301 
 # AXN_5.10_3333_17072500, 0001, Quectel-L76B, 1.0
 #################################################
-SERIAL=$(dmesg | grep 'cp210x' | awk '{print substr($0,length($0)-6,8)}' | tail -1)
+SERIAL=$(dmesg | grep 'usb 1-1.2: cp210x' | awk '{print substr($0,length($0)-6,8)}' | tail -1)
 if [[ $SERIAL ]]; then
     if ! [ -L /dev/ttyACM0 ]; then
         ln -s /dev/$SERIAL /dev/ttyACM0
