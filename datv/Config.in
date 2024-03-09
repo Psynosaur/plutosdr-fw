@@ -32,4 +32,6 @@ menu "SKRORG"
     source "$BR2_EXTERNAL_PLUTOSDR_PATH/package/soapysdr-master/Config.in"
     source "$BR2_EXTERNAL_PLUTOSDR_PATH/package/soapyplutosdr-master/Config.in"
     source "$BR2_EXTERNAL_PLUTOSDR_PATH/package/libgse/Config.in"
+    source "$BR2_EXTERNAL_PLUTOSDR_PATH/package/satdump/Config.in"
+    source "$BR2_EXTERNAL_PLUTOSDR_PATH/package/nng/Config.in"
 endmenu
