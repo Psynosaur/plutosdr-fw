@@ -94,3 +94,7 @@ ln -sf ../../wpa_supplicant/ifupdown.sh ${TARGET_DIR}/etc/network/if-pre-up.d/wp
 ln -sf ../../wpa_supplicant/ifupdown.sh ${TARGET_DIR}/etc/network/if-post-down.d/wpasupplicant
 
 ln -sf device_reboot ${TARGET_DIR}/usr/sbin/pluto_reboot
+#rm -rf ${TARGET_DIR}/usr/share/satdump/resources
+#Remove not needed srt applictations
+rm -rf ${TARGET_DIR}/usr/bin/srt-file-transmit
+rm -rf ${TARGET_DIR}/usr/bin/srt-tunnel
