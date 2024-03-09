@@ -4,7 +4,8 @@
 export ADI_IGNORE_VERSION_CHECK = 1
 SKIP_LEGAL=1
 # Use Buildroot External Linaro GCC 7.3-2018.05 arm-linux-gnueabihf Toolchain
-CROSS_COMPILE = arm-linux-gnueabihf-
+#CROSS_COMPILE = arm-linux-gnueabihf-
+CROSS_COMPILE = arm-none-linux-gnueabihf-
 TOOLS_PATH = PATH="$(CURDIR)/buildroot/output/host/bin:$(CURDIR)/buildroot/output/host/sbin:$(PATH)"
 TOOLCHAIN = $(CURDIR)/buildroot/output/host/bin/$(CROSS_COMPILE)gcc
 ABSOLUTE_PATH=$(shell cd `dirname "${BASH_SOURCE[0]}"` && pwd)
@@ -71,7 +72,7 @@ endif
 TARGET_DTS_FILES:=$(foreach dts,$(TARGET_DTS_FILES),build/$(dts))
 
 TOOLCHAIN:
-	make -C buildroot ARCH=arm zynq_pluto_defconfig
+	make -C buildroot ARCH=arm zynq_plutodatv_defconfig
 	make -C buildroot toolchain
 
 build:

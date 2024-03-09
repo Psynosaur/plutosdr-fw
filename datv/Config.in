@@ -34,4 +34,5 @@ menu "SKRORG"
     source "$BR2_EXTERNAL_PLUTOSDR_PATH/package/libgse/Config.in"
     source "$BR2_EXTERNAL_PLUTOSDR_PATH/package/satdump/Config.in"
     source "$BR2_EXTERNAL_PLUTOSDR_PATH/package/nng/Config.in"
+	source "$BR2_EXTERNAL_PLUTOSDR_PATH/package/srt/Config.in"
 endmenu
