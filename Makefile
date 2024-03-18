@@ -1,5 +1,5 @@
 
-VIVADO_VERSION ?= 2020.1
+#VIVADO_VERSION ?= 2020.1
 #VIVADO_VERSION ?= 2022.1
 export ADI_IGNORE_VERSION_CHECK = 1
 SKIP_LEGAL=1
@@ -45,7 +45,7 @@ endif
 
 TARGET ?= pluto
 SUPPORTED_TARGETS:=pluto sidekiqz2 plutoplus e200
-#XSA_FILE ?= datv/bitstream/${TARGET}/system_top.xsa
+XSA_FILE ?= datv/bitstream/${TARGET}/system_top.xsa
 
 $(warning *** Building target $(TARGET),)
 
